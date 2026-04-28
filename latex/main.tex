@@ -360,6 +360,151 @@ O OWA é a métrica síntese adotada pela Competição M4 \cite{makridakis2018m4
 OWA $< 1$ significa que o método supera o benchmark \cite{makridakis2018m4results}. É a métrica primária utilizada neste trabalho para comparar o protocolo guiado com o Auto-ARIMA.
 
 % ============================================================
+%  CAPÍTULO 3 — METODOLOGIA
+% ============================================================
+\chapter{Metodologia}
+\label{cap:metodologia}
+
+Este capítulo descreve o delineamento da pesquisa, o conjunto de dados utilizado, o protocolo de diagnóstico estatístico proposto, a família de modelos candidatos, o baseline de comparação e o pipeline experimental adotado para validar a hipótese central do trabalho.
+
+% ----------------------------------------------------------
+\section{Delineamento da Pesquisa}
+\label{sec:delineamento}
+
+A pesquisa tem caráter quantitativo e natureza aplicada, com delineamento experimental comparativo. A estratégia consiste em aplicar dois pipelines de seleção de modelos ao mesmo conjunto de séries temporais e comparar seus desempenhos pelas métricas oficiais da Competição M4.
+
+O pipeline proposto — denominado aqui \textit{pipeline guiado} — aplica o protocolo de diagnóstico estatístico de quatro etapas descrito na Seção \ref{sec:protocolo} para determinar, a priori, qual classe de modelo é mais adequada a cada série. O pipeline de referência — denominado \textit{baseline cego} — aplica Auto-ARIMA a todas as séries sem diagnóstico prévio. A comparação entre os dois pipelines constitui o teste empírico da hipótese enunciada na Seção \ref{sec:objetivo-geral}.
+
+A unidade de análise é a série temporal individual. Para cada série são registrados: o perfil diagnóstico atribuído pelo protocolo, o modelo indicado, e os valores de sMAPE, MASE e OWA apurados no horizonte de 18 passos à frente. Os resultados são agregados globalmente e por perfil diagnóstico para identificar em quais classes de séries a seleção guiada apresenta ganho mais expressivo.
+
+% ----------------------------------------------------------
+\section{Conjunto de Dados}
+\label{sec:dados}
+
+O experimento é conduzido sobre o subconjunto mensal da Competição M4, que reúne 48.000 séries temporais univariadas reais de domínios variados — economia, finanças, indústria, demografia, entre outros \cite{makridakis2020m4}. As séries são disponibilizadas com divisão pré-definida entre amostra de treino e amostra de teste, e o horizonte de previsão é de $h = 18$ passos à frente \cite{makridakis2020m4}. A Tabela \ref{tab:m4-mensal} sintetiza as principais características do subconjunto.
+
+\begin{table}[H]
+  \centering
+  \caption{Características do subconjunto mensal da Competição M4.}
+  \label{tab:m4-mensal}
+  \begin{tabular}{lc}
+    \toprule
+    \textbf{Atributo} & \textbf{Valor} \\
+    \midrule
+    Número de séries             & 48.000 \\
+    Frequência                   & Mensal \\
+    Horizonte de previsão        & 18 passos \\
+    Comprimento mínimo (treino)  & 42 observações \\
+    Comprimento máximo (treino)  & 2.794 observações \\
+    Domínios                     & Macro, micro, finanças, indústria, demografia, outros \\
+    \bottomrule
+  \end{tabular}
+  \fonte{\citeonline{makridakis2020m4}}
+\end{table}
+
+Não são realizadas transformações globais no conjunto. Cada série é tratada individualmente no pipeline de diagnóstico, e transformações locais — como diferenciação ou logaritmização — são aplicadas apenas quando indicadas pelos testes estatísticos em cada etapa.
+
+% ----------------------------------------------------------
+\section{Protocolo de Diagnóstico Estatístico}
+\label{sec:protocolo}
+
+O protocolo proposto opera como um funil de quatro etapas sequenciais, aplicado a cada série individualmente antes de qualquer modelagem. O resultado de cada etapa determina se a série avança para a etapa seguinte ou é direcionada para um modelo específico.
+
+\subsection{Etapa 1 — Estacionariedade}
+\label{subsec:etapa1}
+
+A primeira etapa avalia se a série é estacionária em covariância por meio da aplicação conjunta dos testes ADF e KPSS. Conforme \citeonline{kwiatkowski1992testing}, o teste KPSS foi desenvolvido precisamente para complementar o ADF ao inverter as hipóteses: enquanto o ADF testa a raiz unitária como hipótese nula, o KPSS postula a estacionariedade como hipótese nula. A concordância entre os dois testes — ADF rejeita $H_0$ e KPSS não rejeita $H_0$ — constitui evidência robusta de estacionariedade; a discordância indica a presença de raiz unitária fraca ou quebra estrutural, e requer investigação adicional \cite{kwiatkowski1992testing}.
+
+Quando a série não é estacionária, aplica-se diferenciação de primeira ordem e os testes são reaplicados. O número de diferenciações necessárias determina o parâmetro $d$ dos modelos ARIMA e ARFIMA. O nível de significância adotado é $\alpha = 0{,}05$ em ambos os testes.
+
+\subsection{Etapa 2 — Linearidade}
+\label{subsec:etapa2}
+
+A segunda etapa investiga se a dinâmica da série pode ser capturada por um modelo linear. Um modelo autorregressivo de ordem $p$ — selecionado por AIC com $p_{\max} = 12$, compatível com a periodicidade mensal — é ajustado à série estacionarizada. O teste BDS de \citeonline{broock1996test} é então aplicado sobre os resíduos desse modelo para verificar a hipótese de independência serial.
+
+De acordo com \citeonline{broock1996test}, a escolha do parâmetro de distância $\varepsilon$ e da dimensão de imersão $m$ influencia a potência do teste. Adota-se a faixa recomendada pelos autores: $m \in \{2, 3, 4, 5\}$ e $\varepsilon \in \{0{,}5;\, 1{,}0;\, 1{,}5\}$ vezes o desvio-padrão dos resíduos.
+
+A rejeição consistente de $H_0$ em múltiplas combinações $(m, \varepsilon)$, ao nível $\alpha = 0{,}05$, é interpretada como evidência de que o modelo linear não captura toda a estrutura da série, indicando dependência não-linear. Nesse caso, a série é direcionada para modelos da família não-linear (LSTM). Quando $H_0$ não é rejeitada de forma consistente, a série avança para a Etapa 3.
+
+\subsection{Etapa 3 — Heterocedasticidade Condicional}
+\label{subsec:etapa3}
+
+A terceira etapa verifica a presença de volatilidade condicional nos resíduos do modelo linear. Conforme \citeonline{engle1982autoregressive}, o teste ARCH examina se os resíduos ao quadrado apresentam autocorrelação significativa, evidenciando que a variância dos erros varia ao longo do tempo. O teste é aplicado com $q = 12$ defasagens sobre os resíduos do AR ajustado na Etapa 2, e o nível de significância adotado é $\alpha = 0{,}05$.
+
+A rejeição de $H_0$ — ausência de efeito ARCH — direciona a série para o modelo ARIMA-GARCH, no qual o componente ARIMA captura a média condicional e o GARCH captura a dinâmica da variância residual \cite{bollerslev1986generalized}. Séries sem evidência de heterocedasticidade condicional avançam para a Etapa 4.
+
+\subsection{Etapa 4 — Memória Longa}
+\label{subsec:etapa4}
+
+A quarta etapa avalia se a série apresenta dependência de longo alcance. O expoente de Hurst é estimado pelo método R/S, conforme a formulação original de \citeonline{hurst1951long-storage}. O resultado é confirmado pelo estimador GPH de \citeonline{geweke1983estimation}, que opera no domínio da frequência por meio de regressão log-periódograma e fornece estimativa do parâmetro de integração fracionária $d$.
+
+Séries com $H > 0{,}7$ e parâmetro $d \in (0;\, 0{,}5)$ confirmado pelo GPH são atribuídas ao modelo ARFIMA. Conforme \citeonline{granger1980introduction}, a relação $H = d + 0{,}5$ conecta o expoente de Hurst ao parâmetro fracionário do ARFIMA. Séries que chegam à Etapa 4 sem indicação de memória longa são classificadas como lineares estacionárias e atribuídas ao modelo ARIMA.
+
+% ----------------------------------------------------------
+\section{Família de Modelos por Perfil}
+\label{sec:familia-modelos}
+
+A Tabela \ref{tab:familia-modelos} sintetiza os cinco perfis diagnósticos produzidos pelo protocolo e os modelos indicados para cada perfil.
+
+\begin{table}[H]
+  \centering
+  \caption{Perfis diagnósticos e modelos indicados pelo protocolo.}
+  \label{tab:familia-modelos}
+  \begin{tabular}{p{3.5cm}p{6.5cm}p{3.5cm}}
+    \toprule
+    \textbf{Perfil} & \textbf{Critério de identificação} & \textbf{Modelo indicado} \\
+    \midrule
+    Linear estacionário  & ADF + KPSS concordam; BDS não rejeita; ARCH não rejeita; Hurst $\leq 0{,}7$ & ARIMA \\
+    Sazonal              & Estacionário com sazonalidade detectada & SARIMA \\
+    Não-linear           & BDS rejeita $H_0$ consistentemente                                          & LSTM \\
+    Heterocedástico      & ARCH rejeita $H_0$                                                          & ARIMA-GARCH \\
+    Memória longa        & $H > 0{,}7$ e GPH confirma $d \in (0;\, 0{,}5)$                            & ARFIMA \\
+    \bottomrule
+  \end{tabular}
+  \fonte{Elaboração própria.}
+\end{table}
+
+A implementação de cada modelo segue as configurações descritas a seguir.
+
+\textbf{ARIMA}: seleção de $(p, d, q)$ por minimização do AIC via busca em grade com $p, q \leq 5$, conforme a metodologia de \citeonline{box1970time}. O parâmetro $d$ é determinado pela Etapa 1 do protocolo.
+
+\textbf{SARIMA}: inclui os componentes sazonais $(P, D, Q)_{12}$ adicionados ao ARIMA quando a análise da função de autocorrelação sazonal indica sazonalidade mensal significativa \cite{box1970time}.
+
+\textbf{LSTM}: arquitetura de uma camada oculta com 64 unidades, janela de entrada de 24 passos, treinamento por até 50 épocas com \textit{early stopping} com paciência igual a 5, e otimizador Adam com taxa de aprendizado $10^{-3}$ \cite{hochreiter1997long}.
+
+\textbf{ARIMA-GARCH}: o ARIMA captura a média condicional e o GARCH(1,1), conforme \citeonline{bollerslev1986generalized}, modela a variância condicional dos resíduos.
+
+\textbf{ARFIMA}: estimação do parâmetro $d$ pelo método de máxima verossimilhança exata; ordens $p$ e $q$ selecionadas por AIC, conforme a formulação de \citeonline{granger1980introduction}.
+
+% ----------------------------------------------------------
+\section{Baseline de Comparação}
+\label{sec:baseline}
+
+O pipeline de referência aplica Auto-ARIMA a todas as séries sem diagnóstico prévio, com seleção automática de $(p, d, q)$ por minimização do AIC e teste de raiz unitária integrado. Esse procedimento reproduz a prática comum na literatura de previsão automatizada e constitui um benchmark relevante por ser amplamente adotado em estudos aplicados \cite{hyndman2018forecasting}.
+
+% ----------------------------------------------------------
+\section{Pipeline Experimental}
+\label{sec:pipeline}
+
+O experimento é executado nas seguintes etapas sequenciais:
+
+\begin{enumerate}
+  \item \textbf{Carregamento e particionamento}: as séries são carregadas do repositório oficial da Competição M4 \cite{makridakis2020m4}; a divisão treino/teste segue o protocolo original da competição.
+  \item \textbf{Diagnóstico}: o protocolo de quatro etapas é aplicado individualmente a cada série da amostra de treino; cada série recebe um perfil diagnóstico e um modelo indicado.
+  \item \textbf{Modelagem guiada}: o modelo indicado pelo protocolo é ajustado sobre a amostra de treino de cada série.
+  \item \textbf{Modelagem baseline}: o Auto-ARIMA é ajustado sobre a amostra de treino de cada série.
+  \item \textbf{Previsão}: ambos os pipelines geram previsões para os 18 passos do horizonte de teste.
+  \item \textbf{Avaliação}: sMAPE, MASE e OWA são calculados para cada série, conforme as definições das Seções \ref{subsec:smape}, \ref{subsec:mase} e \ref{subsec:owa}, e agregados globalmente e por perfil diagnóstico.
+  \item \textbf{Análise estatística}: os resultados dos dois pipelines são comparados pelo teste de Wilcoxon para amostras pareadas \cite{wilcoxon1945individual}, adequado à comparação série a série dado que os erros de previsão tipicamente não seguem distribuição normal.
+\end{enumerate}
+
+% ----------------------------------------------------------
+\section{Ambiente Computacional}
+\label{sec:ambiente}
+
+Os experimentos são realizados em Python 3.11. As bibliotecas utilizadas são: \texttt{statsmodels} para os modelos ARIMA, ARFIMA e os testes ADF, KPSS e ARCH; \texttt{arch} para os modelos GARCH; \texttt{hurst} para estimação do expoente de Hurst e do parâmetro GPH; \texttt{pmdarima} para o Auto-ARIMA do baseline; e \texttt{tensorflow}/\texttt{keras} para o modelo LSTM. Os dados da Competição M4 são carregados via a biblioteca \texttt{M4py}. O código e os resultados são versionados em repositório de controle de versão.
+
+% ============================================================
 %  REFERÊNCIAS
 % ============================================================
 \bibliography{referencias}
