@@ -1,0 +1,99 @@
+# ── Scripts de download (não versionar) ──────────────────────
+download_refs.py
+fix_downloads.py
+
+# ── Referências bibliográficas (PDFs — usar Git LFS se quiser versionar) ──
+refs/
+
+# ── Dataset M4 (arquivos grandes) ────────────────────────────
+data/
+*.csv
+*.zip
+*.parquet
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# ── Ambientes virtuais ────────────────────────────────────────
+.env
+.venv
+env/
+venv/
+ENV/
+.python-version
+
+# ── Jupyter Notebooks ────────────────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+*.ipynb_checkpoints
+
+# ── IDEs e editores ───────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# ── Sistema operacional ───────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Logs e temporários ────────────────────────────────────────
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# ── Modelos treinados e checkpoints ──────────────────────────
+*.h5
+*.pkl
+*.joblib
+*.model
+*.pt
+*.pth
+checkpoints/
+saved_models/
+
+# ── Credenciais e variáveis de ambiente ──────────────────────
+.env*
+!.env.example
+secrets.json
+kaggle.json
+credentials.json
+
+# ── Outputs e resultados intermediários ──────────────────────
+# (manter results/tabela_comparativa.csv — é entrega do Sprint 3)
+results/temp/
+outputs/
+
+# ── RAG / ChromaDB ───────────────────────────────────────────
+chroma_db/
+vector_store/
+.chroma/
+
+# ── Ferramentas de desenvolvimento (não versionar) ────────────
+.claude/

@@ -1,0 +1,367 @@
+% ============================================================
+%  TCC — Protocolo de Diagnóstico Estatístico para Séries Temporais
+%  SENAI CIMATEC · Pós-Graduação em Ciência de Dados e IA
+%  Vinícius da Fonseca Abreu · 2026
+% ============================================================
+
+\documentclass[
+  12pt,
+  openright,
+  twoside,
+  a4paper,
+  english,
+  brazil
+]{abntex2}
+
+% ---- Pacotes essenciais ----
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{indentfirst}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{multirow}
+
+% ---- Citações ABNT ----
+\usepackage[brazilian,hyperpageref]{backref}
+\usepackage[alf]{abntex2cite}
+
+% ---- Configuração de margens ABNT ----
+% Superior 3cm | Inferior 2cm | Esquerda 3cm | Direita 2cm
+\usepackage[
+  top=3cm,
+  bottom=2cm,
+  left=3cm,
+  right=2cm
+]{geometry}
+
+% ---- Espaçamento ----
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+\OnehalfSpacing
+
+% ---- Informações do trabalho ----
+\titulo{Protocolo de Diagnóstico Estatístico para Seleção de Modelos em Séries Temporais: uma abordagem aplicada ao dataset M4}
+\autor{Vinícius da Fonseca Abreu}
+\local{Salvador}
+\data{2026}
+\orientador{Prof. Eldman}
+\instituicao{%
+  SENAI CIMATEC\\
+  Pós-Graduação em Ciência de Dados e Inteligência Artificial
+}
+\tipotrabalho{Trabalho de Conclusão de Curso}
+\preambulo{Trabalho de Conclusão de Curso apresentado ao Programa de Pós-Graduação em Ciência de Dados e Inteligência Artificial do SENAI CIMATEC como requisito parcial para obtenção do título de especialista.}
+
+% ============================================================
+%  DOCUMENTO
+% ============================================================
+\begin{document}
+
+\selectlanguage{brazil}
+\frenchspacing
+
+% ---- Capa ----
+\imprimircapa
+
+% ---- Folha de rosto ----
+\imprimirfolhaderosto*
+
+% ---- Sumário ----
+\tableofcontents*
+\cleardoublepage
+
+% ============================================================
+%  CAPÍTULO 1 — INTRODUÇÃO
+% ============================================================
+\chapter{Introdução}
+\label{cap:introducao}
+
+A previsão de séries temporais ocupa um papel central em diversas áreas do conhecimento — da economia à engenharia, passando pela saúde pública e pelo mercado financeiro. A capacidade de antecipar o comportamento futuro de uma variável a partir de seu histórico é, ao mesmo tempo, um problema matemático bem definido e uma demanda prática recorrente. Conforme apontado por \citeonline{makridakis2020m4}, o crescimento expressivo do número de métodos disponíveis — incluindo técnicas de aprendizado de máquina e aprendizado profundo — ampliou as opções do pesquisador sem, contudo, oferecer critérios claros para a escolha entre elas. Essa lacuna metodológica é o ponto de partida deste trabalho: \textit{como escolher qual modelo usar?}
+
+A prática corrente em muitos estudos e projetos aplicados é operar por tentativa e erro — aplica-se ARIMA, testa-se LSTM, comparam-se os erros de validação, e o modelo com menor métrica é declarado vencedor. Essa abordagem ignora uma etapa anterior fundamental: entender a natureza estatística da série antes de qualquer modelagem. Tratar uma série não-linear com ARIMA, que pressupõe linearidade, ou aplicar redes neurais a séries estacionárias simples, onde modelos clássicos generalizam melhor, são erros metodológicos que não aparecem nos resultados de treino, mas se manifestam na previsão real.
+
+Este trabalho parte de uma premissa diferente: \textbf{primeiro diagnosticar a série, depois escolher o modelo}. A hipótese central é que a seleção de modelo guiada por um protocolo de diagnóstico estatístico — composto pelos testes ADF, KPSS, BDS, ARCH e pelo expoente de Hurst — produz previsões mais acuradas do que o benchmark automático (Auto-ARIMA aplicado cegamente), medido pelas métricas oficiais da Competição M4: sMAPE, MASE e OWA.
+
+O protocolo proposto funciona como um funil de quatro etapas aplicado a cada série temporal individualmente, antes da fase de modelagem. A primeira etapa avalia a estacionariedade por meio dos testes ADF e KPSS em conjunto, evitando falsos positivos que ocorrem quando apenas um dos testes é utilizado. A segunda etapa aplica o teste BDS nos resíduos de um modelo autorregressivo ajustado, identificando estrutura não-linear — condição que invalida o uso de modelos lineares. A terceira etapa investiga heterocedasticidade condicional via teste ARCH de Engle, cujo resultado direciona para modelos da família GARCH. A quarta etapa estima a memória longa da série pelo expoente de Hurst combinado com o estimador GPH, indicando o uso de ARFIMA quando pertinente.
+
+O experimento é conduzido sobre o subconjunto mensal da Competição M4, que reúne aproximadamente 48.000 séries temporais univariadas reais de domínios variados. A M4 é o maior benchmark público de previsão de séries temporais disponível na literatura \cite{makridakis2020m4}, e seu uso garante comparabilidade com dezenas de trabalhos anteriores que utilizaram o mesmo conjunto de dados.
+
+\section{Motivação}
+\label{sec:motivacao}
+
+A escolha de modelos por critério estatístico, em vez de por validação cruzada pura, não é nova. Já em \citeonline{box1970time}, a identificação da ordem do modelo ARIMA era feita por inspeção das funções de autocorrelação e autocorrelação parcial — um diagnóstico visual que antecede a estimação. O que mudou nas últimas décadas foi a disponibilidade de modelos alternativos: redes neurais recorrentes, arquiteturas de atenção e modelos baseados em gradiente boosting expandiram o espaço de escolha de forma substancial, sem que a metodologia de seleção tenha acompanhado esse crescimento na mesma proporção.
+
+A Competição M4 revelou um resultado que ainda divide opiniões na comunidade: métodos híbridos e métodos clássicos bem calibrados superaram, em média, as redes neurais profundas aplicadas sem restrições \cite{makridakis2018m4results}. Esse achado sugere que a qualidade do modelo não depende apenas da sua capacidade expressiva, mas do alinhamento entre as propriedades do modelo e as propriedades estatísticas da série que ele tenta capturar.
+
+O teste BDS \cite{broock1996test}, desenvolvido originalmente para detectar dependência não-linear em resíduos de modelos econométricos, oferece um critério formal para decidir quando um modelo linear é suficiente e quando a estrutura da série exige abordagens não-paramétricas. A ausência desse tipo de triagem prévia na maioria dos pipelines de previsão automatizados representa uma lacuna que este trabalho busca endereçar.
+
+\section{Objetivo Geral}
+\label{sec:objetivo-geral}
+
+Propor e validar um protocolo de diagnóstico estatístico que guie a seleção de modelos de previsão para séries temporais, comparando seu desempenho frente ao benchmark automático (Auto-ARIMA) sobre o subconjunto mensal da Competição M4.
+
+\section{Objetivos Específicos}
+\label{sec:objetivos-especificos}
+
+\begin{enumerate}
+  \item Implementar o pipeline de diagnóstico composto pelos testes ADF, KPSS, BDS, ARCH e expoente de Hurst;
+  \item Classificar as séries do M4 mensal segundo os resultados do diagnóstico e atribuir o modelo indicado para cada perfil;
+  \item Treinar e avaliar os modelos atribuídos — ARIMA, SARIMA, LSTM, ARIMA-GARCH e ARFIMA — sobre as séries correspondentes;
+  \item Comparar os resultados em sMAPE, MASE e OWA frente ao benchmark cego (Auto-ARIMA em todas as séries);
+  \item Discutir os trade-offs de custo computacional, interpretabilidade e acurácia entre as duas abordagens.
+\end{enumerate}
+
+\section{Estrutura do Trabalho}
+\label{sec:estrutura}
+
+O trabalho está organizado em cinco capítulos. O Capítulo \ref{cap:fundamentacao} apresenta a fundamentação teórica, cobrindo os conceitos de séries temporais, os testes estatísticos utilizados no diagnóstico, os modelos de previsão abordados e as métricas de avaliação. O Capítulo 3 descreve a metodologia, detalhando o protocolo de diagnóstico e o design experimental. O Capítulo 4 apresenta e discute os resultados. O Capítulo 5 traz as conclusões e aponta direções para trabalhos futuros.
+
+% ============================================================
+%  CAPÍTULO 2 — FUNDAMENTAÇÃO TEÓRICA
+% ============================================================
+\chapter{Fundamentação Teórica}
+\label{cap:fundamentacao}
+
+\section{Séries Temporais}
+\label{sec:series-temporais}
+
+Segundo \citeonline{morettin2006analise}, uma série temporal é uma sequência de observações de uma variável aleatória indexadas no tempo, $\{y_t\}_{t=1}^{T}$, em que a ordem das observações carrega informação. Essa dependência temporal é o que diferencia séries temporais de amostras aleatórias independentes e identicamente distribuídas, tornando sua modelagem metodologicamente distinta da estatística clássica.
+
+Conforme \citeonline{hyndman2018forecasting}, uma série temporal pode ser decomposta em quatro componentes: tendência ($T_t$), sazonalidade ($S_t$), ciclo ($C_t$) e componente irregular ou ruído ($\varepsilon_t$). No modelo aditivo, esses componentes se somam:
+
+\begin{equation}
+  y_t = T_t + S_t + C_t + \varepsilon_t
+  \label{eq:decomposicao-aditiva}
+\end{equation}
+
+No modelo multiplicativo, interagem de forma proporcional:
+
+\begin{equation}
+  y_t = T_t \cdot S_t \cdot C_t \cdot \varepsilon_t
+  \label{eq:decomposicao-multiplicativa}
+\end{equation}
+
+De acordo com \citeonline{hyndman2018forecasting}, a escolha entre os dois depende da estrutura dos dados: quando a amplitude da sazonalidade cresce proporcionalmente à tendência, o modelo multiplicativo é mais adequado.
+
+\subsection{Processos Estocásticos e Estacionariedade}
+\label{subsec:estacionariedade}
+
+Conforme \citeonline{hamilton1994time}, um processo estocástico $\{y_t\}$ é dito \textbf{estritamente estacionário} se a distribuição conjunta de qualquer subconjunto de variáveis é invariante a deslocamentos no tempo. Na prática, trabalha-se com a condição mais fraca de \textbf{estacionariedade fraca} (ou de segunda ordem), que exige \cite{hamilton1994time}:
+
+\begin{enumerate}
+  \item $\mathbb{E}[y_t] = \mu$, constante para todo $t$;
+  \item $\text{Var}(y_t) = \sigma^2 < \infty$, constante para todo $t$;
+  \item $\text{Cov}(y_t, y_{t-k}) = \gamma(k)$, dependente apenas da defasagem $k$, não de $t$.
+\end{enumerate}
+
+A estacionariedade é um pressuposto fundamental dos modelos ARIMA e ARMA. Quando uma série apresenta raiz unitária — isto é, quando seus choques têm efeitos permanentes — ela é integrada de ordem $d$, denotada $I(d)$, e precisa ser diferenciada $d$ vezes para tornar-se estacionária \cite{hamilton1994time}.
+
+\section{Testes de Diagnóstico Estatístico}
+\label{sec:testes-diagnostico}
+
+\subsection{Teste de Dickey-Fuller Aumentado (ADF)}
+\label{subsec:adf}
+
+O teste de Dickey-Fuller Aumentado, proposto por \citeonline{dickey1979distribution}, verifica a presença de raiz unitária em uma série temporal. A hipótese nula ($H_0$) postula que a série possui raiz unitária — ou seja, é não-estacionária — enquanto a hipótese alternativa ($H_1$) é a estacionariedade.
+
+O modelo estimado na forma aumentada, conforme \citeonline{said1984testing}, é:
+
+\begin{equation}
+  \Delta y_t = \alpha + \beta t + \gamma y_{t-1} + \sum_{i=1}^{p} \delta_i \Delta y_{t-i} + \varepsilon_t
+  \label{eq:adf}
+\end{equation}
+
+onde $\Delta y_t = y_t - y_{t-1}$ é o operador de primeira diferença, $\alpha$ é a constante, $\beta t$ é a tendência determinística, e os termos $\Delta y_{t-i}$ são incluídos para corrigir autocorrelação nos resíduos. O teste é sobre $H_0: \gamma = 0$; rejeitar $H_0$ implica que a série é estacionária.
+
+A versão aumentada, desenvolvida por \citeonline{said1984testing}, corrige uma limitação do teste original de \citeonline{dickey1979distribution}, que assumia resíduos sem autocorrelação. A quantidade de defasagens $p$ é tipicamente selecionada via Critério de Informação de Akaike (AIC) ou Critério de Schwarz (BIC).
+
+\subsection{Teste KPSS}
+\label{subsec:kpss}
+
+O teste de Kwiatkowski-Phillips-Schmidt-Shin, proposto por \citeonline{kwiatkowski1992testing}, complementa o ADF ao inverter as hipóteses: $H_0$ é que a série é estacionária (ou trend-estacionária) e $H_1$ é que ela possui raiz unitária. Conforme os autores, a estatística de teste é construída a partir dos resíduos de uma regressão de $y_t$ sobre uma constante ou sobre uma tendência linear \cite{kwiatkowski1992testing}.
+
+De acordo com \citeonline{hyndman2018forecasting}, a utilização conjunta de ADF e KPSS resolve uma ambiguidade recorrente: quando os dois testes concordam — ADF rejeita $H_0$ e KPSS não rejeita —, a evidência de estacionariedade é robusta. Quando divergem, a série pode apresentar fraca raiz unitária ou estrutura de quebra estrutural que requer investigação adicional.
+
+\subsection{Teste BDS}
+\label{subsec:bds}
+
+O teste de Brock-Dechert-Scheinkman, desenvolvido por \citeonline{broock1996test}, é um teste não-paramétrico de independência serial que detecta estrutura não-linear nos dados. Aplicado sobre os resíduos de um modelo linear ajustado — tipicamente um AR —, sua hipótese nula postula que os resíduos são independentes e identicamente distribuídos (i.i.d.). Rejeitar $H_0$ indica que o modelo linear não capturou toda a estrutura da série, sugerindo dependência não-linear \cite{broock1996test}.
+
+Conforme \citeonline{broock1996test}, a estatística BDS é fundamentada na \textit{integral de correlação}, definida como a fração de pares de vetores de dimensão $m$ que estão a uma distância menor que $\varepsilon$ no espaço de estados:
+
+\begin{equation}
+  C_{m,T}(\varepsilon) = \frac{2}{T_m(T_m - 1)} \sum_{t < s} \mathbf{1}\left(\|y_t^m - y_s^m\| < \varepsilon\right)
+  \label{eq:integral-correlacao}
+\end{equation}
+
+onde $T_m = T - m + 1$, $y_t^m = (y_t, y_{t+1}, \ldots, y_{t+m-1})$ é o vetor de imersão de dimensão $m$ e $\mathbf{1}(\cdot)$ é a função indicadora. Sob a hipótese nula de i.i.d., demonstra-se que $C_{m,T}(\varepsilon) \to [C_{1,T}(\varepsilon)]^m$, e a distância entre esses valores, devidamente normalizada, converge para uma distribuição normal padrão \cite{broock1996test}.
+
+Neste trabalho, a rejeição do BDS sobre os resíduos de um AR ajustado é interpretada como evidência de que a série possui estrutura não-linear, invalidando o ARIMA como modelo final e direcionando para LSTM, GRU ou modelos baseados em gradient boosting.
+
+\subsection{Teste ARCH de Engle}
+\label{subsec:arch}
+
+A heterocedasticidade condicional é uma propriedade comum em séries financeiras e econômicas, na qual a variância dos erros não é constante ao longo do tempo, mas depende de erros passados. Conforme \citeonline{engle1982autoregressive}, o teste ARCH verifica se os resíduos ao quadrado de um modelo ajustado apresentam autocorrelação, o que constitui evidência de volatilidade condicional.
+
+O modelo ARCH($q$), proposto por \citeonline{engle1982autoregressive}, expressa a variância condicional como:
+
+\begin{equation}
+  \sigma_t^2 = \alpha_0 + \sum_{i=1}^{q} \alpha_i \varepsilon_{t-i}^2
+  \label{eq:arch}
+\end{equation}
+
+A hipótese nula do teste é $H_0: \alpha_1 = \alpha_2 = \cdots = \alpha_q = 0$, isto é, ausência de efeito ARCH. A detecção de heterocedasticidade condicional direciona para a família de modelos GARCH, que \citeonline{bollerslev1986generalized} generalizou ao permitir que a variância condicional dependa também de suas próprias defasagens passadas.
+
+\subsection{Expoente de Hurst e Memória Longa}
+\label{subsec:hurst}
+
+Séries com \textbf{memória longa} (ou dependência de longo alcance) apresentam autocorrelações que decaem em lei de potência — muito mais lentamente do que o decaimento exponencial observado em processos ARMA. Essa propriedade foi formalizada por \citeonline{hurst1951long-storage} por meio do expoente $H$, estimado pela análise R/S (\textit{Rescaled Range}) ou pelo estimador de Geweke-Porter-Hudak (GPH) no domínio da frequência.
+
+De acordo com \citeonline{hurst1951long-storage} e \citeonline{granger1980introduction}, os valores de $H$ se interpretam da seguinte forma:
+
+\begin{itemize}
+  \item $H = 0{,}5$: processo sem memória, equivalente ao ruído branco;
+  \item $H > 0{,}5$: memória longa positiva — valores altos tendem a ser seguidos de valores altos;
+  \item $H < 0{,}5$: antipersistência — reversão à média mais rápida que o esperado.
+\end{itemize}
+
+Conforme \citeonline{granger1980introduction}, séries com $H > 0{,}5$ possuem dependência de longo prazo cuja intensidade justifica o uso de modelos fracionalmente integrados, como o ARFIMA, em substituição ao ARIMA padrão, que opera com integrações de ordem inteira e não captura adequadamente essa estrutura.
+
+\section{Modelos de Previsão}
+\label{sec:modelos-previsao}
+
+\subsection{ARIMA}
+\label{subsec:arima}
+
+O modelo Autorregressivo Integrado de Médias Móveis, ARIMA($p, d, q$), foi proposto por \citeonline{box1970time} e constitui o modelo clássico de referência para séries temporais univariadas lineares. Conforme os autores, o modelo combina três componentes:
+
+\begin{itemize}
+  \item \textbf{AR($p$)}: a observação atual é uma combinação linear de $p$ observações passadas;
+  \item \textbf{I($d$)}: a série é diferenciada $d$ vezes até atingir estacionariedade;
+  \item \textbf{MA($q$)}: a observação atual depende de $q$ erros de previsão passados.
+\end{itemize}
+
+A representação geral do modelo, após $d$ diferenciações, é \cite{box1970time}:
+
+\begin{equation}
+  \phi(B)(1 - B)^d y_t = \theta(B)\varepsilon_t
+  \label{eq:arima}
+\end{equation}
+
+onde $B$ é o operador de retardo ($By_t = y_{t-1}$), $\phi(B) = 1 - \phi_1 B - \cdots - \phi_p B^p$ e $\theta(B) = 1 + \theta_1 B + \cdots + \theta_q B^q$. Neste trabalho, o Auto-ARIMA — que automatiza a seleção de $p, d, q$ via minimização do AIC ou BIC — é utilizado como benchmark de comparação.
+
+A extensão sazonal, SARIMA($p, d, q$)($P, D, Q$)$_s$, incorpora componentes análogos operando na frequência sazonal $s$, conforme \citeonline{box1970time}.
+
+\subsection{ARFIMA}
+\label{subsec:arfima}
+
+O modelo ARFIMA (Autorregressivo Fracionalmente Integrado de Médias Móveis), introduzido por \citeonline{granger1980introduction}, generaliza o ARIMA ao permitir que o parâmetro de integração $d$ assuma valores não inteiros $d \in (-0{,}5;\, 0{,}5)$:
+
+\begin{equation}
+  \phi(B)(1 - B)^d y_t = \theta(B)\varepsilon_t, \quad d \in \mathbb{R}
+  \label{eq:arfima}
+\end{equation}
+
+Conforme \citeonline{granger1980introduction}, quando $0 < d < 0{,}5$, o processo é estacionário e apresenta memória longa, com o expoente de Hurst relacionando-se a $d$ pela expressão $H = d + 0{,}5$. Neste trabalho, o ARFIMA é indicado pelo protocolo quando o diagnóstico da Etapa 4 identifica $H > 0{,}5$.
+
+\subsection{Modelos GARCH}
+\label{subsec:garch}
+
+O modelo GARCH($p, q$), proposto por \citeonline{bollerslev1986generalized}, modela a variância condicional como uma função das variâncias e erros ao quadrado passados:
+
+\begin{equation}
+  \sigma_t^2 = \omega + \sum_{i=1}^{q} \alpha_i \varepsilon_{t-i}^2 + \sum_{j=1}^{p} \beta_j \sigma_{t-j}^2
+  \label{eq:garch}
+\end{equation}
+
+De acordo com \citeonline{bollerslev1986generalized}, a especificação GARCH(1,1) — caso particular com $p = q = 1$ — é suficiente para capturar a dinâmica de volatilidade da maioria das séries financeiras empíricas. Neste trabalho, o GARCH é combinado com ARIMA — o ARIMA modela a média condicional e o GARCH modela os resíduos — quando a Etapa 3 do protocolo detecta heterocedasticidade condicional.
+
+\subsection{LSTM — Long Short-Term Memory}
+\label{subsec:lstm}
+
+As redes LSTM, propostas por \citeonline{hochreiter1997long}, são uma variante das redes neurais recorrentes (RNNs) desenvolvida para capturar dependências de longo prazo em sequências, contornando o problema de dissipação do gradiente que afeta RNNs simples. Conforme os autores, a unidade LSTM introduz três portões — \textit{forget gate}, \textit{input gate} e \textit{output gate} — que controlam o fluxo de informação através de uma célula de memória \cite{hochreiter1997long}:
+
+\begin{align}
+  f_t &= \sigma(W_f [h_{t-1}, x_t] + b_f) \label{eq:lstm-forget} \\
+  i_t &= \sigma(W_i [h_{t-1}, x_t] + b_i) \label{eq:lstm-input} \\
+  \tilde{C}_t &= \tanh(W_C [h_{t-1}, x_t] + b_C) \label{eq:lstm-cell-candidate} \\
+  C_t &= f_t \odot C_{t-1} + i_t \odot \tilde{C}_t \label{eq:lstm-cell} \\
+  o_t &= \sigma(W_o [h_{t-1}, x_t] + b_o) \label{eq:lstm-output} \\
+  h_t &= o_t \odot \tanh(C_t) \label{eq:lstm-hidden}
+\end{align}
+
+onde $\sigma$ é a função sigmoide, $\odot$ é o produto de Hadamard (elemento a elemento), $x_t$ é a entrada no instante $t$ e $h_t$ é o estado oculto transmitido para o passo seguinte \cite{hochreiter1997long}.
+
+A ausência de pressupostos de linearidade ou distribuição dos dados torna o LSTM adequado para séries onde o teste BDS rejeita a hipótese de i.i.d. nos resíduos, indicando estrutura não-linear. A Competição M4 mostrou que modelos híbridos combinando Suavização Exponencial com LSTM — o ES-RNN de \citeonline{smyl2020hybrid}, vencedor da competição — superaram tanto modelos puramente clássicos quanto puramente neurais.
+
+\section{A Competição M4}
+\label{sec:m4}
+
+Conforme \citeonline{makridakis2020m4}, a Competição M4 é a quarta edição da série de competições de previsão de séries temporais iniciada por Makridakis em 1982. A edição de 2018 reuniu 100.000 séries temporais univariadas reais de seis frequências temporais (anual, trimestral, mensal, semanal, diária e horária) e 61 métodos competidores, constituindo o maior benchmark público de previsão disponível na literatura \cite{makridakis2020m4}.
+
+O subconjunto mensal, utilizado neste trabalho, contém aproximadamente 48.000 séries de domínios variados — economia, finanças, indústria, demografia e outros —, com horizonte de previsão de 18 passos à frente \cite{makridakis2020m4}.
+
+De acordo com \citeonline{makridakis2018m4results}, os principais achados da competição relevantes para este trabalho são:
+
+\begin{enumerate}
+  \item Métodos híbridos — combinando modelos estatísticos e redes neurais — foram os mais acurados no geral;
+  \item A combinação de previsões (\textit{forecast combination}) produziu resultados robustos mesmo quando os métodos individuais eram relativamente simples;
+  \item Modelos clássicos bem calibrados superaram redes neurais aplicadas sem restrições em diversas categorias;
+  \item A identificação de características da série antes da modelagem apareceu como fator diferencial nos métodos mais bem posicionados.
+\end{enumerate}
+
+\section{Métricas de Avaliação}
+\label{sec:metricas}
+
+A avaliação dos modelos segue as métricas oficiais da Competição M4.
+
+\subsection{sMAPE — Symmetric Mean Absolute Percentage Error}
+\label{subsec:smape}
+
+Proposto por \citeonline{makridakis1993accuracy}, o sMAPE corrige a assimetria do MAPE tradicional ao dividir o erro pelo semissoma dos valores real e previsto:
+
+\begin{equation}
+  \text{sMAPE} = \frac{100\%}{h} \sum_{t=1}^{h} \frac{|y_t - \hat{y}_t|}{(|y_t| + |\hat{y}_t|)/2}
+  \label{eq:smape}
+\end{equation}
+
+onde $h$ é o horizonte de previsão e $\hat{y}_t$ é o valor previsto \cite{makridakis1993accuracy}. Valores menores indicam maior acurácia. A métrica é adimensional e comparável entre séries de escalas diferentes.
+
+\subsection{MASE — Mean Absolute Scaled Error}
+\label{subsec:mase}
+
+Proposto por \citeonline{hyndman2006another}, o MASE escala o erro absoluto médio pelo erro de um método de referência ingênuo (naive) calculado na amostra de treino:
+
+\begin{equation}
+  \text{MASE} = \frac{1}{h} \sum_{t=1}^{h} \frac{|y_t - \hat{y}_t|}{\frac{1}{T - m} \sum_{t=m+1}^{T} |y_t - y_{t-m}|}
+  \label{eq:mase}
+\end{equation}
+
+onde $m$ é o período sazonal — 12 para séries mensais \cite{hyndman2006another}. MASE $< 1$ indica que o modelo supera o naive sazonal. Conforme \citeonline{hyndman2006another}, ao contrário do MAPE, o MASE é bem definido mesmo quando $y_t = 0$, o que o torna mais adequado para séries com valores nulos ou próximos de zero.
+
+\subsection{OWA — Overall Weighted Average}
+\label{subsec:owa}
+
+O OWA é a métrica síntese adotada pela Competição M4 \cite{makridakis2018m4results}. Conforme \citeonline{makridakis2018m4results}, ela é calculada como a média das razões entre o desempenho do método avaliado e o desempenho de um benchmark de referência (Naive 2):
+
+\begin{equation}
+  \text{OWA} = \frac{1}{2}\left(\frac{\text{sMAPE}}{\text{sMAPE}_{\text{Naive2}}} + \frac{\text{MASE}}{\text{MASE}_{\text{Naive2}}}\right)
+  \label{eq:owa}
+\end{equation}
+
+OWA $< 1$ significa que o método supera o benchmark \cite{makridakis2018m4results}. É a métrica primária utilizada neste trabalho para comparar o protocolo guiado com o Auto-ARIMA.
+
+% ============================================================
+%  REFERÊNCIAS
+% ============================================================
+\bibliography{referencias}
+
+\end{document}
