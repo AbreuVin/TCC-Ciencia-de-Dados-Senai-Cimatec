@@ -1,0 +1,55 @@
+\changetocdepth {4}
+\babel@toc {brazil}{}\relax 
+\babel@toc {brazil}{}\relax 
+\setlength {\cftchapterindent }{\cftlastnumwidth } \setlength {\cftchapternumwidth }{2em}
+\setlength {\cftchapterindent }{0em} \setlength {\cftchapternumwidth }{\cftlastnumwidth }
+\contentsline {chapter}{\chapternumberline {1}\MakeTextUppercase []{Introdução}}{5}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Motivação}{6}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Objetivo Geral}{7}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Objetivos Específicos}{7}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Estrutura do Trabalho}{7}{section.1.4}%
+\setlength {\cftchapterindent }{0em} \setlength {\cftchapternumwidth }{\cftlastnumwidth }
+\contentsline {chapter}{\chapternumberline {2}\MakeTextUppercase []{Fundamentação Teórica}}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Séries Temporais}{9}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Processos Estocásticos e Estacionariedade}{9}{subsection.2.1.1}%
+\contentsline {section}{\numberline {2.2}Testes de Diagnóstico Estatístico}{10}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Teste de Dickey-Fuller Aumentado (ADF)}{10}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Teste KPSS}{10}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Teste BDS}{10}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Teste ARCH de Engle}{11}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Expoente de Hurst e Memória Longa}{11}{subsection.2.2.5}%
+\contentsline {section}{\numberline {2.3}Modelos de Previsão}{12}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}ARIMA}{12}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}ARFIMA}{12}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Modelos GARCH}{13}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}LSTM — Long Short-Term Memory}{13}{subsection.2.3.4}%
+\contentsline {subsection}{\numberline {2.3.5}Método Theta}{14}{subsection.2.3.5}%
+\contentsline {section}{\numberline {2.4}A Competição M4}{15}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Métricas de Avaliação}{15}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}sMAPE — Symmetric Mean Absolute Percentage Error}{16}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}MASE — Mean Absolute Scaled Error}{16}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}OWA — Overall Weighted Average}{16}{subsection.2.5.3}%
+\setlength {\cftchapterindent }{0em} \setlength {\cftchapternumwidth }{\cftlastnumwidth }
+\contentsline {chapter}{\chapternumberline {3}\MakeTextUppercase []{Metodologia}}{17}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Delineamento da Pesquisa}{17}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Conjunto de Dados}{17}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Protocolo de Diagnóstico Estatístico}{18}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Etapa 0 — Sazonalidade}{18}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Etapa 1 — Estacionariedade}{19}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Etapa 2 — Linearidade}{19}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Etapa 3 — Heterocedasticidade Condicional}{19}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Etapa 4 — Memória Longa}{20}{subsection.3.3.5}%
+\contentsline {section}{\numberline {3.4}Família de Modelos por Perfil}{20}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Baselines de Comparação}{21}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Pipeline Experimental}{21}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Validação da Acurácia Diagnóstica}{22}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}Definição do Modelo Ótimo Empírico}{22}{subsection.3.7.1}%
+\contentsline {subsection}{\numberline {3.7.2}Taxa de Acerto e Arrependimento}{23}{subsection.3.7.2}%
+\contentsline {subsection}{\numberline {3.7.3}Análise por Perfil}{23}{subsection.3.7.3}%
+\contentsline {section}{\numberline {3.8}Análises Complementares}{23}{section.3.8}%
+\contentsline {subsection}{\numberline {3.8.1}Desagregação por Domínio de Origem}{23}{subsection.3.8.1}%
+\contentsline {subsection}{\numberline {3.8.2}Estratificação por Comprimento da Série}{24}{subsection.3.8.2}%
+\contentsline {subsection}{\numberline {3.8.3}Posicionamento no Ranking M4}{24}{subsection.3.8.3}%
+\contentsline {section}{\numberline {3.9}Ambiente Computacional}{24}{section.3.9}%
+\setlength {\cftchapterindent }{\cftlastnumwidth } \setlength {\cftchapternumwidth }{2em}
+\contentsline {chapter}{\MakeTextUppercase []{Refer\^encias}}{27}{section*.5}%

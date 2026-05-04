@@ -1,0 +1,371 @@
+% ============================================================
+%  TCC — Artigo Científico
+%  SENAI CIMATEC · Pós-Graduação em Ciência de Dados e IA
+%  Vinícius da Fonseca Abreu · 2026
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+% ---- Codificação e idioma ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage[expansion=false]{microtype}
+\usepackage{indentfirst}
+
+% ---- Layout de página ----
+\usepackage[
+  top=2.5cm, bottom=2.5cm,
+  left=2cm,  right=2cm
+]{geometry}
+\usepackage{multicol}
+\setlength{\columnsep}{0.7cm}
+\setlength{\emergencystretch}{2em}
+
+% ---- Matemática ----
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ---- Figuras, tabelas e floats ----
+\usepackage{graphicx}
+\graphicspath{{./}{../latex/}}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{font=small, labelfont=bf, justification=centering}
+
+% ---- Formatação de seções ----
+\usepackage{titlesec}
+
+% Seção: "I.  TÍTULO" — centralizado, negrito, versalete, algarismos romanos
+\renewcommand{\thesection}{\Roman{section}}
+% Subseção: "2.1." — usa contador arábico
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+
+\titleformat{\section}
+  {\centering\normalsize\bfseries\scshape}
+  {\thesection.}{0.5em}{}
+\titlespacing{\section}{0pt}{14pt}{6pt}
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\scshape}
+  {\thesubsection.}{0.5em}{}
+\titlespacing{\subsection}{0pt}{8pt}{4pt}
+
+% ---- Cabeçalho/rodapé ----
+\usepackage{fancyhdr}
+\setlength{\headheight}{25pt}
+\addtolength{\topmargin}{-13pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{%
+  \IfFileExists{logo_senai.png}%
+    {\includegraphics[height=0.7cm]{logo_senai}}%
+    {\textbf{\small SENAI \textsc{CiMATEC}}}%
+}
+\fancyhead[R]{\small\textit{Pós-Graduação em Ciência de Dados e IA}}
+\fancyfoot[L]{\small Página~\thepage}
+\fancyfoot[R]{\textbf{\small SENAI \textsc{CiMATEC}}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% ---- Hyperlinks (deve vir antes de abntex2cite) ----
+\usepackage[hidelinks]{hyperref}
+
+% ---- Citações ABNT ----
+\usepackage[alf]{abntex2cite}
+
+% ============================================================
+\begin{document}
+
+% ---- Bloco de título (coluna única antes das duas colunas) ----
+\twocolumn[{%
+  % -- Cabeçalho institucional --
+  \begin{center}
+    \IfFileExists{logo_senai.png}{%
+      \includegraphics[height=2cm]{logo_senai}\\[0.3cm]
+    }{%
+      {\Large\bfseries SENAI \textsc{CiMATEC}}\\[0.15cm]
+    }
+    {\small\bfseries Centro Universitário SENAI CIMATEC}\\
+    {\small Programa de Pós-Graduação em Ciência de Dados e Inteligência Artificial}\\
+    {\small Salvador, Bahia, Brasil}
+  \end{center}
+  \vspace{0.3cm}
+  \noindent\rule{\linewidth}{0.8pt}
+  \vspace{0.4cm}
+
+  % -- Título e autoria --
+  \begin{center}
+    {\large\bfseries
+      Protocolo de Diagnóstico Estatístico para Seleção de Modelos\\[4pt]
+      em Séries Temporais: uma abordagem aplicada ao dataset M4}
+    \vspace{0.5cm}
+
+    Vinícius da Fonseca Abreu\\
+    \texttt{viniciusabreu115@gmail.com}\\[2pt]
+    Orientador: Prof. Eldman
+  \end{center}
+  \vspace{0.5cm}
+
+  % ---- Resumo (coluna única, parágrafo em itálico) ----
+  \noindent\textbf{Resumo} — \textit{%
+    A prática corrente de seleção de modelos de previsão de séries temporais opera
+    predominantemente por tentativa e erro, ignorando as propriedades estatísticas
+    das séries antes da modelagem. Este trabalho propõe e aplica um protocolo de
+    diagnóstico estatístico de cinco etapas (detecção de sazonalidade via STL,
+    estacionariedade por ADF/KPSS, linearidade por BDS, heterocedasticidade
+    condicional por ARCH e memória longa por Hurst/GPH), aplicado ao subconjunto mensal da
+    Competição M4 (48.000 séries). O protocolo atribui a cada série o modelo mais
+    adequado entre ARIMA, SARIMA, LSTM, ARIMA-GARCH e ARFIMA, com base em
+    diagnóstico formal em vez de busca automática. A hipótese central é que essa
+    seleção guiada produz menor OWA do que o benchmark Auto-ARIMA aplicado cegamente.
+    A acurácia diagnóstica é avaliada por taxa de acerto e arrependimento médio em
+    relação ao modelo ótimo empírico (\textit{oracle}).%
+  }
+  \vspace{0.6cm}
+
+  \noindent\textbf{Palavras-chave:} séries temporais; diagnóstico estatístico;
+  seleção de modelos; Competição M4; ARIMA; LSTM; GARCH; ARFIMA.
+  \vspace{0.8cm}
+}]
+\thispagestyle{empty}
+
+% ============================================================
+\section{Introdução}
+
+A previsão de séries temporais é uma demanda central em economia, finanças,
+indústria e saúde pública. Com o crescimento do número de métodos disponíveis
+(incluindo técnicas de aprendizado profundo), ampliaram-se as opções do
+pesquisador sem que critérios claros de escolha tenham acompanhado esse
+crescimento \cite{makridakis2020m4}.
+
+A prática corrente opera por tentativa e erro: aplica-se ARIMA, testa-se LSTM,
+\mbox{comparam-se} os erros de validação, e o modelo de menor métrica é
+declarado vencedor. Essa abordagem ignora uma etapa anterior fundamental: entender a
+natureza estatística da série antes de qualquer modelagem. Estudo empírico de
+\citeonline{makridakis2018statistical} sobre um grande conjunto de séries reais
+evidenciou que métodos estatísticos clássicos superam consistentemente técnicas
+de aprendizado de máquina em horizontes curtos e séries com padrões estáveis,
+enquanto o contrário ocorre em séries com forte não-linearidade, resultado que
+reforça a necessidade de diagnóstico estatístico prévio à escolha do modelo.
+
+Este trabalho parte de uma premissa diferente: \textbf{primeiro diagnosticar a
+série, depois escolher o modelo}. A hipótese central é que a seleção de modelo
+guiada por um protocolo de diagnóstico estatístico (composto por detecção de
+sazonalidade e pelos testes ADF, KPSS, BDS, ARCH e pelo expoente de Hurst)
+produz previsões mais acuradas do que o benchmark automático (Auto-ARIMA
+aplicado cegamente), medido pelas métricas oficiais da Competição M4: sMAPE,
+MASE e OWA \cite{makridakis2018m4results}.
+
+Nessa competição, o FFORMA \cite{montero2020fforma} (que seleciona e pondera
+modelos com base em características estatísticas) ficou em segundo lugar geral,
+validando empiricamente que a caracterização prévia da série é fator determinante
+para a acurácia da previsão.
+
+O experimento é conduzido sobre o subconjunto mensal da Competição M4, que
+reúne 48.000 séries temporais univariadas reais de domínios variados, com
+horizonte de previsão de 18 passos à frente \cite{makridakis2020m4}.
+
+% ============================================================
+\section{Fundamentação Teórica}
+
+\subsection{Testes de Diagnóstico}
+
+\textbf{Estacionariedade.} O teste ADF \cite{said1984testing} verifica a
+presença de raiz unitária ($H_0$: não estacionária). O teste KPSS
+\cite{kwiatkowski1992testing} inverte as hipóteses ($H_0$: estacionária), e
+a aplicação conjunta dos dois reduz falsos positivos.
+
+\textbf{Linearidade.} O teste BDS \cite{broock1996test} aplica-se nos
+resíduos de um AR($p$) ajustado. Rejeição de $H_0$ (i.i.d.) indica dependência
+não-linear que invalida modelos ARIMA.
+
+\textbf{Heterocedasticidade condicional.} O teste ARCH de
+\citeonline{engle1982autoregressive} verifica se os resíduos ao quadrado
+apresentam autocorrelação, evidenciando volatilidade condicional.
+
+\textbf{Memória longa.} Séries com dependência de longo alcance violam
+a hipótese de integração inteira subjacente ao ARIMA; nesses casos, o ARFIMA
+descreve a dinâmica de forma mais fiel. A presença de memória longa é
+indicada pelo expoente de Hurst \cite{hurst1951long-storage} estimado pelo
+método R/S e confirmada pelo estimador GPH \cite{geweke1983estimation}
+quando $H > 0{,}7$ e $d \in (0;\, 0{,}5)$.
+
+\subsection{Modelos de Previsão}
+
+O \textbf{ARIMA}$(p,d,q)$ \cite{box1970time} é o modelo clássico de
+referência para séries lineares estacionárias. O \textbf{SARIMA} incorpora
+componentes sazonais $(P,D,Q)_{12}$ \cite{box1970time}. O \textbf{LSTM}
+\cite{hochreiter1997long}, com o \textit{forget gate} introduzido por
+\citeonline{gers2000learning}, captura dependências não-lineares e de longo
+prazo. O \textbf{ARIMA-GARCH} combina modelagem da média e da variância
+condicional \cite{bollerslev1986generalized}. O \textbf{ARFIMA}
+\cite{granger1980introduction} acomoda integrações fracionárias
+$d \in (0;\, 0{,}5)$.
+
+\subsection{Métricas de Avaliação}
+
+As métricas seguem o padrão oficial da Competição M4. O \textbf{sMAPE}
+\cite{makridakis1993accuracy} e o \textbf{MASE} \cite{hyndman2006another}
+são combinados no \textbf{OWA} \cite{makridakis2018m4results}:
+
+\begin{equation}
+  \text{OWA} = \frac{1}{2}\!\left(
+    \frac{\text{sMAPE}}{\text{sMAPE}_{\text{Naive2}}}
+    + \frac{\text{MASE}}{\text{MASE}_{\text{Naive2}}}
+  \right)
+  \label{eq:owa}
+\end{equation}
+
+OWA $< 1$ indica que o método supera o Naive2. É a métrica primária deste
+trabalho.
+
+% ============================================================
+\section{Metodologia}
+
+\subsection{Conjunto de Dados}
+
+O subconjunto mensal da Competição M4 \cite{makridakis2020m4} reúne 48.000
+séries temporais univariadas reais de seis domínios: Macro, Micro, Finanças,
+Indústria, Demografia e Outros. O comprimento das séries de treino varia de
+42 a 2.794 observações; o horizonte de previsão é $h = 18$ passos à frente.
+A divisão treino/teste segue o protocolo original da competição.
+
+É relevante observar que uma parcela das séries apresenta comprimento inferior
+a 100 observações, o que pode comprometer a potência de testes como BDS e GPH
+nas séries mais curtas — aspecto levado em conta na interpretação dos diagnósticos.
+
+\subsection{Protocolo de Diagnóstico (5 Etapas)}
+
+O protocolo opera como um funil aplicado a cada série individualmente antes
+de qualquer modelagem.
+
+\textbf{Etapa 0 — Sazonalidade.} A força sazonal é calculada pela
+decomposição STL com período $s = 12$ \cite{hyndman2018forecasting}:
+
+\begin{equation}
+  F_S = \max\!\left(0,\; 1 - \frac{\text{Var}(R_t)}{\text{Var}(S_t + R_t)}\right)
+  \label{eq:fs}
+\end{equation}
+
+Quando $F_S > 0{,}64$, a variável \texttt{sazonal} recebe valor verdadeiro,
+e o modelo final inclui componentes sazonais (SARIMA em vez de ARIMA), desde
+que as Etapas 1–4 não redirecionem a série para outro perfil.
+
+\textbf{Etapa 1 — Estacionariedade.} ADF e KPSS são aplicados
+conjuntamente. Concordância entre os dois constitui evidência robusta de
+estacionariedade ($\alpha = 0{,}05$). Discordância indica raiz unitária ou
+quebra estrutural. Séries não estacionárias são diferenciadas, e o parâmetro
+$d$ é registrado.
+
+\textbf{Etapa 2 — Linearidade.} Um AR$(p)$ com $p_{\max} = 12$ é ajustado
+à série estacionarizada. O teste BDS é aplicado nos resíduos com
+$m \in \{2, 3, 4, 5\}$ e $\varepsilon \in \{0{,}5;\, 1{,}0;\, 1{,}5\}\,\hat{\sigma}$
+\cite{broock1996test}. Rejeição consistente de $H_0$ direciona para LSTM.
+
+\textbf{Etapa 3 — Heterocedasticidade condicional.} O teste ARCH é aplicado
+com $q = 12$ defasagens. Rejeição direciona para ARIMA-GARCH
+\cite{bollerslev1986generalized}.
+
+\textbf{Etapa 4 — Memória longa.} O expoente de Hurst (R/S) é confirmado
+pelo estimador GPH \cite{geweke1983estimation}. Séries com $H > 0{,}7$ e
+$d \in (0;\, 0{,}5)$ são atribuídas ao ARFIMA \cite{granger1980introduction}.
+Séries que chegam à Etapa 4 sem indicação de memória longa são classificadas
+como ARIMA (ou SARIMA, se Etapa 0 indicou sazonalidade).
+
+\subsection{Família de Modelos}
+
+\begin{table}[H]
+  \centering
+  \caption{Perfis diagnósticos e modelos indicados.}
+  \label{tab:perfis}
+  \small
+  \begin{tabular}{p{1.4cm}p{3.7cm}p{2.2cm}}
+    \toprule
+    \textbf{Perfil} & \textbf{Critério} & \textbf{Modelo} \\
+    \midrule
+    Linear estac. & ADF+KPSS; BDS e ARCH não rejeitam; $H \leq 0{,}7$ & ARIMA \\
+    Sazonal       & Idem + $F_S > 0{,}64$ (Etapa~0) & SARIMA \\
+    Não-linear    & BDS rejeita $H_0$ & LSTM \\
+    Heteroc.      & ARCH rejeita $H_0$ & ARIMA-GARCH \\
+    Mem. longa    & $H > 0{,}7$; GPH confirma $d$ & ARFIMA \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{2pt}
+  \small Fonte: Elaboração própria.
+\end{table}
+
+\subsection{Baselines de Comparação}
+
+Dois pipelines sem diagnóstico são usados como referência: \textbf{Auto-ARIMA}
+\cite{hyndman2018forecasting} e \textbf{Método Theta} \cite{assimakopoulos2000theta},
+vencedor da Competição M3 e competitivo na M4 \cite{makridakis2018m4results}.
+
+\subsection{Validação da Acurácia Diagnóstica}
+
+Para cada série $i$, define-se o \textbf{modelo ótimo empírico} (\textit{oracle})
+como o modelo da família que apresenta o menor OWA na amostra de teste:
+
+\begin{equation}
+  m^*_i = \arg\min_{m \in \mathcal{M}} \,\text{OWA}(m, i)
+  \label{eq:oracle}
+\end{equation}
+
+A \textbf{taxa de acerto} (TA) mede a fração de séries em que o protocolo
+identificou exatamente $m^*_i$. O \textbf{arrependimento médio}
+$\bar{r} = \frac{1}{N}\sum_i [\text{OWA}(m^p_i, i) - \text{OWA}(m^*_i, i)]$
+quantifica o custo dos erros de diagnóstico. O \textit{oracle} representa o teto teórico de desempenho da família de
+modelos adotada; espera-se que o protocolo se posicione entre esse teto
+e o baseline Auto-ARIMA.
+
+\subsection{Análises Complementares}
+
+Além da avaliação global, os resultados são desagregados por
+\textbf{domínio de origem} (Macro, Micro, Finanças, Indústria, Demo\-grafia
+e Outros), permitindo identificar se o protocolo favorece sistematicamente
+algum tipo de série. A segunda desagregação considera a \textbf{faixa de
+comprimento} da série (curta: $T < 100$; média: $100 \leq T < 500$; longa:
+$T \geq 500$): séries curtas são particularmente exigentes para testes como
+BDS e GPH, cuja potência depende fortemente de $T$
+\cite{broock1996test,geweke1983estimation}. Por fim, o OWA médio do protocolo
+é confrontado com os resultados publicados dos 61 métodos da Competição M4,
+tomando ES-RNN \cite{smyl2020hybrid} e FFORMA \cite{montero2020fforma} como
+âncoras superiores para situar o desempenho obtido no ranking geral.
+
+\subsection{Ambiente Computacional}
+
+Os experimentos são realizados em Python~3.11 com as bibliotecas:
+\texttt{stats\-models} (ADF, KPSS, ARIMA, SARIMA), \texttt{arch} (ARCH, GARCH,
+BDS), \texttt{hurst} (Hurst/GPH), \texttt{pmdarima} (Auto-ARIMA),
+\texttt{stats\-forecast} (Theta) e \texttt{tensor\-flow}/\texttt{keras} (LSTM).
+
+% ============================================================
+\section{Resultados e Discussão}
+
+\textit{[Seção a ser preenchida após execução dos experimentos.]}
+
+\noindent A análise dos resultados é organizada em torno de três perguntas
+centrais: o protocolo melhora a acurácia média em relação ao Auto-ARIMA e ao
+Theta? Em quais domínios e faixas de comprimento o ganho é mais consistente?
+E em que posição, dentre os 61 métodos da Competição M4, o desempenho obtido
+se situa? Para responder a cada uma, são apresentadas a distribuição de séries
+por perfil diagnóstico, as métricas OWA desagregadas e a taxa de acerto do
+protocolo em relação ao \textit{oracle}.
+
+% ============================================================
+\section{Conclusão}
+
+\textit{[Seção a ser preenchida após análise dos resultados.]}
+
+\noindent Este trabalho propôs um protocolo de diagnóstico estatístico de
+cinco etapas para seleção de modelos de previsão de séries temporais, validado
+sobre o subconjunto mensal da Competição M4. A contribuição principal é a
+formalização da triagem estatística prévia à modelagem
+(substituindo a abordagem por tentativa e erro) e a mensuração da acurácia diagnóstica via
+análise de \textit{oracle} e arrependimento.
+
+% ============================================================
+\bibliography{referencias}
+
+\end{document}

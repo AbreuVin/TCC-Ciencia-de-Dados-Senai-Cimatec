@@ -86,11 +86,11 @@
 
 A previsão de séries temporais ocupa um papel central em diversas áreas do conhecimento — da economia à engenharia, passando pela saúde pública e pelo mercado financeiro. A capacidade de antecipar o comportamento futuro de uma variável a partir de seu histórico é, ao mesmo tempo, um problema matemático bem definido e uma demanda prática recorrente. Conforme apontado por \citeonline{makridakis2020m4}, o crescimento expressivo do número de métodos disponíveis — incluindo técnicas de aprendizado de máquina e aprendizado profundo — ampliou as opções do pesquisador sem, contudo, oferecer critérios claros para a escolha entre elas. Essa lacuna metodológica é o ponto de partida deste trabalho: \textit{como escolher qual modelo usar?}
 
-A prática corrente em muitos estudos e projetos aplicados é operar por tentativa e erro — aplica-se ARIMA, testa-se LSTM, comparam-se os erros de validação, e o modelo com menor métrica é declarado vencedor. Essa abordagem ignora uma etapa anterior fundamental: entender a natureza estatística da série antes de qualquer modelagem. Tratar uma série não-linear com ARIMA, que pressupõe linearidade, ou aplicar redes neurais a séries estacionárias simples, onde modelos clássicos generalizam melhor, são erros metodológicos que não aparecem nos resultados de treino, mas se manifestam na previsão real.
+A prática corrente em muitos estudos e projetos aplicados é operar por tentativa e erro — aplica-se ARIMA, testa-se LSTM, comparam-se os erros de validação, e o modelo com menor métrica é declarado vencedor. Essa abordagem ignora uma etapa anterior fundamental: entender a natureza estatística da série antes de qualquer modelagem. Tratar uma série não-linear com ARIMA, que pressupõe linearidade, ou aplicar redes neurais a séries estacionárias simples, onde modelos clássicos generalizam melhor, são erros metodológicos que não aparecem nos resultados de treino, mas se manifestam na previsão real. Estudo empírico de \citeonline{makridakis2018statistical} sobre um grande conjunto de séries reais evidenciou que métodos estatísticos clássicos superam consistentemente técnicas de aprendizado de máquina em horizontes curtos e séries com padrões estáveis, enquanto o contrário ocorre em séries com forte não-linearidade — resultado que reforça a necessidade de diagnóstico estatístico prévio à escolha do modelo.
 
-Este trabalho parte de uma premissa diferente: \textbf{primeiro diagnosticar a série, depois escolher o modelo}. A hipótese central é que a seleção de modelo guiada por um protocolo de diagnóstico estatístico — composto pelos testes ADF, KPSS, BDS, ARCH e pelo expoente de Hurst — produz previsões mais acuradas do que o benchmark automático (Auto-ARIMA aplicado cegamente), medido pelas métricas oficiais da Competição M4: sMAPE, MASE e OWA.
+Este trabalho parte de uma premissa diferente: \textbf{primeiro diagnosticar a série, depois escolher o modelo}. A hipótese central é que a seleção de modelo guiada por um protocolo de diagnóstico estatístico — composto por detecção de sazonalidade (Etapa 0) e pelos testes ADF, KPSS, BDS, ARCH e pelo expoente de Hurst — produz previsões mais acuradas do que o benchmark automático (Auto-ARIMA aplicado cegamente), medido pelas métricas oficiais da Competição M4: sMAPE, MASE e OWA.
 
-O protocolo proposto funciona como um funil de quatro etapas aplicado a cada série temporal individualmente, antes da fase de modelagem. A primeira etapa avalia a estacionariedade por meio dos testes ADF e KPSS em conjunto, evitando falsos positivos que ocorrem quando apenas um dos testes é utilizado. A segunda etapa aplica o teste BDS nos resíduos de um modelo autorregressivo ajustado, identificando estrutura não-linear — condição que invalida o uso de modelos lineares. A terceira etapa investiga heterocedasticidade condicional via teste ARCH de Engle, cujo resultado direciona para modelos da família GARCH. A quarta etapa estima a memória longa da série pelo expoente de Hurst combinado com o estimador GPH, indicando o uso de ARFIMA quando pertinente.
+O protocolo proposto funciona como um funil de cinco etapas aplicado a cada série temporal individualmente, antes da fase de modelagem. A etapa zero detecta sazonalidade pela força sazonal da decomposição STL, produzindo um indicador binário que determina se o modelo final deve incluir componentes sazonais. A primeira etapa avalia a estacionariedade por meio dos testes ADF e KPSS em conjunto, evitando falsos positivos que ocorrem quando apenas um dos testes é utilizado. A segunda etapa aplica o teste BDS nos resíduos de um modelo autorregressivo ajustado, identificando estrutura não-linear — condição que invalida o uso de modelos lineares. A terceira etapa investiga heterocedasticidade condicional via teste ARCH de Engle, cujo resultado direciona para modelos da família GARCH. A quarta etapa estima a memória longa da série pelo expoente de Hurst combinado com o estimador GPH, indicando o uso de ARFIMA quando pertinente.
 
 O experimento é conduzido sobre o subconjunto mensal da Competição M4, que reúne aproximadamente 48.000 séries temporais univariadas reais de domínios variados. A M4 é o maior benchmark público de previsão de séries temporais disponível na literatura \cite{makridakis2020m4}, e seu uso garante comparabilidade com dezenas de trabalhos anteriores que utilizaram o mesmo conjunto de dados.
 
@@ -99,7 +99,7 @@ O experimento é conduzido sobre o subconjunto mensal da Competição M4, que re
 
 A escolha de modelos por critério estatístico, em vez de por validação cruzada pura, não é nova. Já em \citeonline{box1970time}, a identificação da ordem do modelo ARIMA era feita por inspeção das funções de autocorrelação e autocorrelação parcial — um diagnóstico visual que antecede a estimação. O que mudou nas últimas décadas foi a disponibilidade de modelos alternativos: redes neurais recorrentes, arquiteturas de atenção e modelos baseados em gradiente boosting expandiram o espaço de escolha de forma substancial, sem que a metodologia de seleção tenha acompanhado esse crescimento na mesma proporção.
 
-A Competição M4 revelou um resultado que ainda divide opiniões na comunidade: métodos híbridos e métodos clássicos bem calibrados superaram, em média, as redes neurais profundas aplicadas sem restrições \cite{makridakis2018m4results}. Esse achado sugere que a qualidade do modelo não depende apenas da sua capacidade expressiva, mas do alinhamento entre as propriedades do modelo e as propriedades estatísticas da série que ele tenta capturar.
+A Competição M4 revelou um resultado que ainda divide opiniões na comunidade: métodos híbridos e métodos clássicos bem calibrados superaram, em média, as redes neurais profundas aplicadas sem restrições \cite{makridakis2018m4results}. Esse achado sugere que a qualidade do modelo não depende apenas da sua capacidade expressiva, mas do alinhamento entre as propriedades do modelo e as propriedades estatísticas da série que ele tenta capturar. Nessa mesma competição, o método FFORMA de \citeonline{montero2020fforma} — que seleciona e pondera modelos automaticamente com base em características estatísticas extraídas de cada série — ficou em segundo lugar geral, validando empiricamente a hipótese de que a caracterização prévia da série é fator determinante para a acurácia da previsão.
 
 O teste BDS \cite{broock1996test}, desenvolvido originalmente para detectar dependência não-linear em resíduos de modelos econométricos, oferece um critério formal para decidir quando um modelo linear é suficiente e quando a estrutura da série exige abordagens não-paramétricas. A ausência desse tipo de triagem prévia na maioria dos pipelines de previsão automatizados representa uma lacuna que este trabalho busca endereçar.
 
@@ -112,11 +112,12 @@ Propor e validar um protocolo de diagnóstico estatístico que guie a seleção 
 \label{sec:objetivos-especificos}
 
 \begin{enumerate}
-  \item Implementar o pipeline de diagnóstico composto pelos testes ADF, KPSS, BDS, ARCH e expoente de Hurst;
+  \item Implementar o pipeline de diagnóstico composto pela detecção de sazonalidade (Etapa 0) e pelos testes ADF, KPSS, BDS, ARCH e expoente de Hurst;
   \item Classificar as séries do M4 mensal segundo os resultados do diagnóstico e atribuir o modelo indicado para cada perfil;
   \item Treinar e avaliar os modelos atribuídos — ARIMA, SARIMA, LSTM, ARIMA-GARCH e ARFIMA — sobre as séries correspondentes;
-  \item Comparar os resultados em sMAPE, MASE e OWA frente ao benchmark cego (Auto-ARIMA em todas as séries);
-  \item Discutir os trade-offs de custo computacional, interpretabilidade e acurácia entre as duas abordagens.
+  \item Comparar os resultados em sMAPE, MASE e OWA frente a dois benchmarks cegos: Auto-ARIMA e Método Theta aplicados a todas as séries sem diagnóstico prévio;
+  \item Avaliar a acurácia diagnóstica do protocolo, medindo a frequência com que o modelo indicado corresponde ao modelo de melhor desempenho empírico para cada série;
+  \item Discutir os trade-offs de custo computacional, interpretabilidade e acurácia entre as abordagens comparadas.
 \end{enumerate}
 
 \section{Estrutura do Trabalho}
@@ -170,7 +171,7 @@ A estacionariedade é um pressuposto fundamental dos modelos ARIMA e ARMA. Quand
 \subsection{Teste de Dickey-Fuller Aumentado (ADF)}
 \label{subsec:adf}
 
-O teste de Dickey-Fuller Aumentado, proposto por \citeonline{dickey1979distribution}, verifica a presença de raiz unitária em uma série temporal. A hipótese nula ($H_0$) postula que a série possui raiz unitária — ou seja, é não-estacionária — enquanto a hipótese alternativa ($H_1$) é a estacionariedade.
+O Teste de Dickey-Fuller Aumentado (ADF) tem como base o teste original de \citeonline{dickey1979distribution}, que verificava a presença de raiz unitária em processos autorregressivos de primeira ordem. A extensão para a forma aumentada — aplicável a modelos ARMA de ordem desconhecida — foi desenvolvida por \citeonline{said1984testing}. A hipótese nula ($H_0$) postula que a série possui raiz unitária — ou seja, é não-estacionária — enquanto a hipótese alternativa ($H_1$) é a estacionariedade.
 
 O modelo estimado na forma aumentada, conforme \citeonline{said1984testing}, é:
 
@@ -181,14 +182,14 @@ O modelo estimado na forma aumentada, conforme \citeonline{said1984testing}, é:
 
 onde $\Delta y_t = y_t - y_{t-1}$ é o operador de primeira diferença, $\alpha$ é a constante, $\beta t$ é a tendência determinística, e os termos $\Delta y_{t-i}$ são incluídos para corrigir autocorrelação nos resíduos. O teste é sobre $H_0: \gamma = 0$; rejeitar $H_0$ implica que a série é estacionária.
 
-A versão aumentada, desenvolvida por \citeonline{said1984testing}, corrige uma limitação do teste original de \citeonline{dickey1979distribution}, que assumia resíduos sem autocorrelação. A quantidade de defasagens $p$ é tipicamente selecionada via Critério de Informação de Akaike (AIC) ou Critério de Schwarz (BIC).
+A quantidade de defasagens $p$ é tipicamente selecionada via Critério de Informação de Akaike (AIC) ou Critério de Schwarz (BIC) \cite{said1984testing}.
 
 \subsection{Teste KPSS}
 \label{subsec:kpss}
 
 O teste de Kwiatkowski-Phillips-Schmidt-Shin, proposto por \citeonline{kwiatkowski1992testing}, complementa o ADF ao inverter as hipóteses: $H_0$ é que a série é estacionária (ou trend-estacionária) e $H_1$ é que ela possui raiz unitária. Conforme os autores, a estatística de teste é construída a partir dos resíduos de uma regressão de $y_t$ sobre uma constante ou sobre uma tendência linear \cite{kwiatkowski1992testing}.
 
-De acordo com \citeonline{hyndman2018forecasting}, a utilização conjunta de ADF e KPSS resolve uma ambiguidade recorrente: quando os dois testes concordam — ADF rejeita $H_0$ e KPSS não rejeita —, a evidência de estacionariedade é robusta. Quando divergem, a série pode apresentar fraca raiz unitária ou estrutura de quebra estrutural que requer investigação adicional.
+Conforme \citeonline{kwiatkowski1992testing}, o KPSS foi desenvolvido precisamente como complemento ao ADF: ao inverter as hipóteses, os dois testes se controlam mutuamente. Quando concordam — ADF rejeita $H_0$ e KPSS não rejeita $H_0$ —, a evidência de estacionariedade é robusta. Quando divergem, a série pode apresentar raiz unitária fraca ou quebra estrutural, o que requer investigação adicional \cite{kwiatkowski1992testing}.
 
 \subsection{Teste BDS}
 \label{subsec:bds}
@@ -204,7 +205,7 @@ Conforme \citeonline{broock1996test}, a estatística BDS é fundamentada na \tex
 
 onde $T_m = T - m + 1$, $y_t^m = (y_t, y_{t+1}, \ldots, y_{t+m-1})$ é o vetor de imersão de dimensão $m$ e $\mathbf{1}(\cdot)$ é a função indicadora. Sob a hipótese nula de i.i.d., demonstra-se que $C_{m,T}(\varepsilon) \to [C_{1,T}(\varepsilon)]^m$, e a distância entre esses valores, devidamente normalizada, converge para uma distribuição normal padrão \cite{broock1996test}.
 
-Neste trabalho, a rejeição do BDS sobre os resíduos de um AR ajustado é interpretada como evidência de que a série possui estrutura não-linear, invalidando o ARIMA como modelo final e direcionando para LSTM, GRU ou modelos baseados em gradient boosting.
+Neste trabalho, a rejeição do BDS sobre os resíduos de um AR ajustado é interpretada como evidência de que a série possui estrutura não-linear, invalidando o ARIMA como modelo final e direcionando para o modelo LSTM.
 
 \subsection{Teste ARCH de Engle}
 \label{subsec:arch}
@@ -223,7 +224,7 @@ A hipótese nula do teste é $H_0: \alpha_1 = \alpha_2 = \cdots = \alpha_q = 0$,
 \subsection{Expoente de Hurst e Memória Longa}
 \label{subsec:hurst}
 
-Séries com \textbf{memória longa} (ou dependência de longo alcance) apresentam autocorrelações que decaem em lei de potência — muito mais lentamente do que o decaimento exponencial observado em processos ARMA. Essa propriedade foi formalizada por \citeonline{hurst1951long-storage} por meio do expoente $H$, estimado pela análise R/S (\textit{Rescaled Range}) ou pelo estimador de Geweke-Porter-Hudak (GPH) no domínio da frequência.
+Séries com \textbf{memória longa} (ou dependência de longo alcance) apresentam autocorrelações que decaem em lei de potência — muito mais lentamente do que o decaimento exponencial observado em processos ARMA. Essa propriedade foi formalizada por \citeonline{hurst1951long-storage} por meio do expoente $H$, estimado pela análise R/S (\textit{Rescaled Range}) ou pelo estimador GPH de \citeonline{geweke1983estimation}, que opera no domínio da frequência via regressão log-periódograma.
 
 De acordo com \citeonline{hurst1951long-storage} e \citeonline{granger1980introduction}, os valores de $H$ se interpretam da seguinte forma:
 
@@ -270,7 +271,7 @@ O modelo ARFIMA (Autorregressivo Fracionalmente Integrado de Médias Móveis), i
   \label{eq:arfima}
 \end{equation}
 
-Conforme \citeonline{granger1980introduction}, quando $0 < d < 0{,}5$, o processo é estacionário e apresenta memória longa, com o expoente de Hurst relacionando-se a $d$ pela expressão $H = d + 0{,}5$. Neste trabalho, o ARFIMA é indicado pelo protocolo quando o diagnóstico da Etapa 4 identifica $H > 0{,}5$.
+Conforme \citeonline{granger1980introduction}, quando $0 < d < 0{,}5$, o processo é estacionário e apresenta memória longa, com o expoente de Hurst relacionando-se a $d$ pela expressão $H = d + 0{,}5$. Neste trabalho, o ARFIMA é indicado pelo protocolo quando o diagnóstico da Etapa 4 identifica $H > 0{,}7$, limiar adotado como critério operacional para memória longa pronunciada.
 
 \subsection{Modelos GARCH}
 \label{subsec:garch}
@@ -282,12 +283,12 @@ O modelo GARCH($p, q$), proposto por \citeonline{bollerslev1986generalized}, mod
   \label{eq:garch}
 \end{equation}
 
-De acordo com \citeonline{bollerslev1986generalized}, a especificação GARCH(1,1) — caso particular com $p = q = 1$ — é suficiente para capturar a dinâmica de volatilidade da maioria das séries financeiras empíricas. Neste trabalho, o GARCH é combinado com ARIMA — o ARIMA modela a média condicional e o GARCH modela os resíduos — quando a Etapa 3 do protocolo detecta heterocedasticidade condicional.
+A especificação GARCH(1,1) — caso particular com $p = q = 1$ — tem se mostrado empiricamente competitiva frente a especificações mais complexas em uma ampla variedade de séries financeiras, conforme demonstrado por \citeonline{hansen2005forecast} em estudo comparativo de modelos de volatilidade. Neste trabalho, o GARCH é combinado com ARIMA — o ARIMA modela a média condicional e o GARCH modela os resíduos — quando a Etapa 3 do protocolo detecta heterocedasticidade condicional.
 
 \subsection{LSTM — Long Short-Term Memory}
 \label{subsec:lstm}
 
-As redes LSTM, propostas por \citeonline{hochreiter1997long}, são uma variante das redes neurais recorrentes (RNNs) desenvolvida para capturar dependências de longo prazo em sequências, contornando o problema de dissipação do gradiente que afeta RNNs simples. Conforme os autores, a unidade LSTM introduz três portões — \textit{forget gate}, \textit{input gate} e \textit{output gate} — que controlam o fluxo de informação através de uma célula de memória \cite{hochreiter1997long}:
+As redes LSTM, propostas por \citeonline{hochreiter1997long}, são uma variante das redes neurais recorrentes (RNNs) desenvolvida para capturar dependências de longo prazo em sequências, contornando o problema de dissipação do gradiente que afeta RNNs simples. Na formulação original, a arquitetura contava com portões de entrada e saída; o \textit{forget gate} — que permite à célula redefinir seu estado interno — foi introduzido posteriormente por \citeonline{gers2000learning}. Na formulação padrão atual, com os três portões, a unidade LSTM opera da seguinte forma \cite{hochreiter1997long,gers2000learning}:
 
 \begin{align}
   f_t &= \sigma(W_f [h_{t-1}, x_t] + b_f) \label{eq:lstm-forget} \\
@@ -300,7 +301,37 @@ As redes LSTM, propostas por \citeonline{hochreiter1997long}, são uma variante 
 
 onde $\sigma$ é a função sigmoide, $\odot$ é o produto de Hadamard (elemento a elemento), $x_t$ é a entrada no instante $t$ e $h_t$ é o estado oculto transmitido para o passo seguinte \cite{hochreiter1997long}.
 
-A ausência de pressupostos de linearidade ou distribuição dos dados torna o LSTM adequado para séries onde o teste BDS rejeita a hipótese de i.i.d. nos resíduos, indicando estrutura não-linear. A Competição M4 mostrou que modelos híbridos combinando Suavização Exponencial com LSTM — o ES-RNN de \citeonline{smyl2020hybrid}, vencedor da competição — superaram tanto modelos puramente clássicos quanto puramente neurais.
+A ausência de pressupostos de linearidade ou distribuição dos dados torna o LSTM adequado para séries onde o teste BDS rejeita a hipótese de i.i.d. nos resíduos, indicando estrutura não-linear. A Competição M4 mostrou que modelos híbridos combinando Suavização Exponencial com LSTM — o ES-RNN de \citeonline{smyl2020hybrid}, vencedor da competição — superaram tanto modelos puramente clássicos quanto puramente neurais. Revisão abrangente da literatura por \citeonline{hewamalage2021recurrent} indica que, em previsão de séries univariadas de curto horizonte, LSTMs raramente superam métodos estatísticos bem especificados de forma consistente, sendo mais eficazes em séries longas com padrões complexos e não-lineares — o que reforça a lógica de usar o BDS como critério de triagem antes de optar por arquiteturas recorrentes.
+
+\subsection{Método Theta}
+\label{subsec:theta}
+
+O Método Theta, proposto por \citeonline{assimakopoulos2000theta}, é um método de decomposição que modifica a curvatura local de uma série temporal por meio de um coeficiente $\theta$ aplicado às segundas diferenças. A operação define as \textit{theta lines}, curvas que satisfazem:
+
+\begin{equation}
+  \Delta^2 \Theta_\theta(t) = \theta \cdot \Delta^2 y_t
+  \label{eq:theta-def}
+\end{equation}
+
+Na versão padrão do método, utilizam-se dois valores complementares. Para $\theta = 0$, a theta line é a reta de regressão linear ajustada a $y_t$, denotada $\Theta_0(t) = a + bt$, que captura a tendência de longo prazo. Para $\theta = 2$, obtém-se $\Theta_2(t) = 2y_t - \Theta_0(t)$, série com curvatura local duplicada que preserva as oscilações de curto prazo \cite{assimakopoulos2000theta}. A previsão final é a média aritmética das extrapolações independentes das duas theta lines:
+
+\begin{equation}
+  \hat{y}_{T+h} = \frac{1}{2}\,\hat{\Theta}_0(T+h) + \frac{1}{2}\,\hat{\Theta}_2(T+h)
+  \label{eq:theta-forecast}
+\end{equation}
+
+onde $\Theta_0$ é extrapolada pelo crescimento linear e $\Theta_2$ é extrapolada por Suavização Exponencial Simples (SES).
+
+Conforme demonstrado por \citeonline{hyndman2003unmasking}, a previsão resultante é algebricamente equivalente a SES com \textit{drift}, isto é, SES com acréscimo de uma tendência linear:
+
+\begin{equation}
+  \hat{y}_{T+h} = \hat{y}_{T}^{\text{SES}} + \frac{\hat{b}}{2} \cdot h
+  \label{eq:theta-ses-drift}
+\end{equation}
+
+onde $\hat{b}$ é o coeficiente angular da regressão linear ajustada a $y_t$ e $\hat{y}_{T}^{\text{SES}}$ é o nível estimado pelo SES aplicado a $\Theta_2$ \cite{hyndman2003unmasking}. Para séries sazonais, a sazonalidade é removida antes da aplicação do método e reintroduzida após a previsão.
+
+O Método Theta venceu a Competição M3 \cite{assimakopoulos2000theta} e manteve desempenho competitivo na M4 \cite{makridakis2018m4results}, o que o torna referência obrigatória como benchmark em estudos sobre o subconjunto mensal utilizado neste trabalho. Sua principal vantagem é a ausência de hiperparâmetros de estrutura: o único parâmetro livre é o coeficiente de suavização do SES, estimado por mínimos quadrados \cite{hyndman2003unmasking}.
 
 \section{A Competição M4}
 \label{sec:m4}
@@ -371,9 +402,9 @@ Este capítulo descreve o delineamento da pesquisa, o conjunto de dados utilizad
 \section{Delineamento da Pesquisa}
 \label{sec:delineamento}
 
-A pesquisa tem caráter quantitativo e natureza aplicada, com delineamento experimental comparativo. A estratégia consiste em aplicar dois pipelines de seleção de modelos ao mesmo conjunto de séries temporais e comparar seus desempenhos pelas métricas oficiais da Competição M4.
+A pesquisa tem caráter quantitativo e natureza aplicada, com delineamento experimental comparativo \cite{gil2002pesquisa}. A estratégia consiste em aplicar dois pipelines de seleção de modelos ao mesmo conjunto de séries temporais e comparar seus desempenhos pelas métricas oficiais da Competição M4.
 
-O pipeline proposto — denominado aqui \textit{pipeline guiado} — aplica o protocolo de diagnóstico estatístico de quatro etapas descrito na Seção \ref{sec:protocolo} para determinar, a priori, qual classe de modelo é mais adequada a cada série. O pipeline de referência — denominado \textit{baseline cego} — aplica Auto-ARIMA a todas as séries sem diagnóstico prévio. A comparação entre os dois pipelines constitui o teste empírico da hipótese enunciada na Seção \ref{sec:objetivo-geral}.
+O pipeline proposto — denominado aqui \textit{pipeline guiado} — aplica o protocolo de diagnóstico estatístico de cinco etapas descrito na Seção \ref{sec:protocolo} para determinar, a priori, qual classe de modelo é mais adequada a cada série. O pipeline de referência — denominado \textit{baseline cego} — aplica Auto-ARIMA a todas as séries sem diagnóstico prévio. A comparação entre os dois pipelines constitui o teste empírico da hipótese enunciada na Seção \ref{sec:objetivo-geral}. A abordagem é conceitualmente próxima ao FFORMA \cite{montero2020fforma}, que utiliza características estatísticas das séries para ponderar modelos de previsão, diferindo por adotar testes de hipóteses formais — em vez de aprendizado supervisionado — como mecanismo de seleção, o que garante maior interpretabilidade e rastreabilidade das decisões do protocolo.
 
 A unidade de análise é a série temporal individual. Para cada série são registrados: o perfil diagnóstico atribuído pelo protocolo, o modelo indicado, e os valores de sMAPE, MASE e OWA apurados no horizonte de 18 passos à frente. Os resultados são agregados globalmente e por perfil diagnóstico para identificar em quais classes de séries a seleção guiada apresenta ganho mais expressivo.
 
@@ -404,11 +435,25 @@ O experimento é conduzido sobre o subconjunto mensal da Competição M4, que re
 
 Não são realizadas transformações globais no conjunto. Cada série é tratada individualmente no pipeline de diagnóstico, e transformações locais — como diferenciação ou logaritmização — são aplicadas apenas quando indicadas pelos testes estatísticos em cada etapa.
 
+O dataset inclui o rótulo de domínio de origem para cada série (Macro, Micro, Finanças, Indústria, Demografia, Outros), além do comprimento da série de treino, que varia entre 42 e 2.794 observações. Esses atributos são preservados ao longo do experimento para possibilitar desagregações analíticas descritas na Seção \ref{sec:analises-complementares}, onde o desempenho do protocolo é examinado separadamente por domínio e faixa de comprimento.
+
 % ----------------------------------------------------------
 \section{Protocolo de Diagnóstico Estatístico}
 \label{sec:protocolo}
 
-O protocolo proposto opera como um funil de quatro etapas sequenciais, aplicado a cada série individualmente antes de qualquer modelagem. O resultado de cada etapa determina se a série avança para a etapa seguinte ou é direcionada para um modelo específico.
+O protocolo proposto opera como um funil de cinco etapas sequenciais, aplicado a cada série individualmente antes de qualquer modelagem. O resultado de cada etapa determina se a série avança para a etapa seguinte ou é direcionada para um modelo específico.
+
+\subsection{Etapa 0 — Sazonalidade}
+\label{subsec:etapa0}
+
+A etapa zero precede o funil de diagnóstico e determina se a série apresenta padrão sazonal relevante. A detecção é realizada pela decomposição STL (\textit{Seasonal and Trend decomposition using Loess}) com período $s = 12$, que separa a série nos componentes de tendência, sazonalidade e resíduo. A partir dessa decomposição, calcula-se a \textbf{força sazonal} $F_S$, conforme \citeonline{hyndman2018forecasting}:
+
+\begin{equation}
+  F_S = \max\!\left(0,\; 1 - \frac{\text{Var}(R_t)}{\text{Var}(S_t + R_t)}\right)
+  \label{eq:forca-sazonal}
+\end{equation}
+
+onde $S_t$ é o componente sazonal e $R_t$ é o resíduo da decomposição. Quando $F_S > 0{,}64$ — limiar proposto por \citeonline{hyndman2018forecasting} para classificar uma série como ``sazonalmente forte'' —, a série recebe o indicador $\texttt{sazonal} = \text{verdadeiro}$, que é propagado ao final do protocolo: se nenhuma das Etapas 1–4 redirecionar a série para outro perfil, o modelo indicado é SARIMA em vez de ARIMA. Séries com $F_S \leq 0{,}64$ recebem $\texttt{sazonal} = \text{falso}$ e prosseguem normalmente pelo funil.
 
 \subsection{Etapa 1 — Estacionariedade}
 \label{subsec:etapa1}
@@ -455,7 +500,7 @@ A Tabela \ref{tab:familia-modelos} sintetiza os cinco perfis diagnósticos produ
     \textbf{Perfil} & \textbf{Critério de identificação} & \textbf{Modelo indicado} \\
     \midrule
     Linear estacionário  & ADF + KPSS concordam; BDS não rejeita; ARCH não rejeita; Hurst $\leq 0{,}7$ & ARIMA \\
-    Sazonal              & Estacionário com sazonalidade detectada & SARIMA \\
+    Sazonal              & Etapas 1–4 sem redirecionamento; $F_S > 0{,}64$ na Etapa 0 & SARIMA \\
     Não-linear           & BDS rejeita $H_0$ consistentemente                                          & LSTM \\
     Heterocedástico      & ARCH rejeita $H_0$                                                          & ARIMA-GARCH \\
     Memória longa        & $H > 0{,}7$ e GPH confirma $d \in (0;\, 0{,}5)$                            & ARFIMA \\
@@ -468,7 +513,7 @@ A implementação de cada modelo segue as configurações descritas a seguir.
 
 \textbf{ARIMA}: seleção de $(p, d, q)$ por minimização do AIC via busca em grade com $p, q \leq 5$, conforme a metodologia de \citeonline{box1970time}. O parâmetro $d$ é determinado pela Etapa 1 do protocolo.
 
-\textbf{SARIMA}: inclui os componentes sazonais $(P, D, Q)_{12}$ adicionados ao ARIMA quando a análise da função de autocorrelação sazonal indica sazonalidade mensal significativa \cite{box1970time}.
+\textbf{SARIMA}: inclui os componentes sazonais $(P, D, Q)_{12}$ adicionados ao ARIMA quando a Etapa 0 do protocolo detecta sazonalidade forte ($F_S > 0{,}64$) e as Etapas 1–4 não redirecionam a série para outro perfil. A seleção das ordens sazonais segue a metodologia de \citeonline{box1970time}.
 
 \textbf{LSTM}: arquitetura de uma camada oculta com 64 unidades, janela de entrada de 24 passos, treinamento por até 50 épocas com \textit{early stopping} com paciência igual a 5, e otimizador Adam com taxa de aprendizado $10^{-3}$ \cite{hochreiter1997long}.
 
@@ -477,10 +522,16 @@ A implementação de cada modelo segue as configurações descritas a seguir.
 \textbf{ARFIMA}: estimação do parâmetro $d$ pelo método de máxima verossimilhança exata; ordens $p$ e $q$ selecionadas por AIC, conforme a formulação de \citeonline{granger1980introduction}.
 
 % ----------------------------------------------------------
-\section{Baseline de Comparação}
+\section{Baselines de Comparação}
 \label{sec:baseline}
 
-O pipeline de referência aplica Auto-ARIMA a todas as séries sem diagnóstico prévio, com seleção automática de $(p, d, q)$ por minimização do AIC e teste de raiz unitária integrado. Esse procedimento reproduz a prática comum na literatura de previsão automatizada e constitui um benchmark relevante por ser amplamente adotado em estudos aplicados \cite{hyndman2018forecasting}.
+Dois pipelines de referência são utilizados, ambos aplicados a todas as séries sem diagnóstico prévio.
+
+\textbf{Baseline 1 — Auto-ARIMA.} Seleção automática de $(p, d, q)$ por minimização do AIC com teste de raiz unitária integrado, reproduzindo a prática comum em estudos de previsão automatizada \cite{hyndman2018forecasting}. Representa o paradigma de escolha por tentativa e erro sem triagem estatística prévia.
+
+\textbf{Baseline 2 — Método Theta.} O Método Theta de \citeonline{assimakopoulos2000theta}, descrito na Seção \ref{subsec:theta}, é aplicado uniformemente a todas as séries. A escolha é motivada pelo desempenho histórico do método: vencedor da Competição M3 e entre os mais competitivos na M4, ele constitui o benchmark simples de referência mais relevante para o subconjunto mensal \cite{makridakis2018m4results}. A implementação utiliza a biblioteca \texttt{statsforecast} (Nixtla), que disponibiliza o método com tratamento automático de sazonalidade.
+
+A comparação tripla — protocolo guiado, Auto-ARIMA e Theta — permite posicionar a contribuição em relação tanto à abordagem mais utilizada na prática quanto ao melhor método simples documentado na literatura M4.
 
 % ----------------------------------------------------------
 \section{Pipeline Experimental}
@@ -490,19 +541,85 @@ O experimento é executado nas seguintes etapas sequenciais:
 
 \begin{enumerate}
   \item \textbf{Carregamento e particionamento}: as séries são carregadas do repositório oficial da Competição M4 \cite{makridakis2020m4}; a divisão treino/teste segue o protocolo original da competição.
-  \item \textbf{Diagnóstico}: o protocolo de quatro etapas é aplicado individualmente a cada série da amostra de treino; cada série recebe um perfil diagnóstico e um modelo indicado.
+  \item \textbf{Diagnóstico}: o protocolo de cinco etapas (Etapa 0 a Etapa 4) é aplicado individualmente a cada série da amostra de treino; cada série recebe um perfil diagnóstico e um modelo indicado.
   \item \textbf{Modelagem guiada}: o modelo indicado pelo protocolo é ajustado sobre a amostra de treino de cada série.
-  \item \textbf{Modelagem baseline}: o Auto-ARIMA é ajustado sobre a amostra de treino de cada série.
-  \item \textbf{Previsão}: ambos os pipelines geram previsões para os 18 passos do horizonte de teste.
-  \item \textbf{Avaliação}: sMAPE, MASE e OWA são calculados para cada série, conforme as definições das Seções \ref{subsec:smape}, \ref{subsec:mase} e \ref{subsec:owa}, e agregados globalmente e por perfil diagnóstico.
-  \item \textbf{Análise estatística}: os resultados dos dois pipelines são comparados pelo teste de Wilcoxon para amostras pareadas \cite{wilcoxon1945individual}, adequado à comparação série a série dado que os erros de previsão tipicamente não seguem distribuição normal.
+  \item \textbf{Modelagem com todos os candidatos}: os cinco modelos da família (ARIMA, SARIMA, LSTM, ARIMA-GARCH e ARFIMA) são ajustados sobre a amostra de treino de \emph{cada} série, independentemente do perfil diagnóstico. Esta etapa fornece os dados necessários para a análise de acurácia diagnóstica descrita na Seção \ref{sec:validacao-protocolo}.
+  \item \textbf{Modelagem dos baselines}: Auto-ARIMA e Método Theta são ajustados sobre a amostra de treino de cada série.
+  \item \textbf{Previsão}: todos os pipelines geram previsões para os 18 passos do horizonte de teste.
+  \item \textbf{Avaliação}: sMAPE, MASE e OWA são calculados para cada série, conforme as Seções \ref{subsec:smape}, \ref{subsec:mase} e \ref{subsec:owa}, e agregados globalmente, por perfil diagnóstico, por domínio de origem e por faixa de comprimento da série, conforme Seção \ref{sec:analises-complementares}.
+  \item \textbf{Análise estatística}: os resultados dos três pipelines (guiado, Auto-ARIMA, Theta) são comparados pelo teste de Wilcoxon para amostras pareadas \cite{wilcoxon1945individual}, com nível de significância $\alpha = 0{,}05$.
 \end{enumerate}
+
+% ----------------------------------------------------------
+\section{Validação da Acurácia Diagnóstica}
+\label{sec:validacao-protocolo}
+
+A maioria dos trabalhos que propõem protocolos de diagnóstico verifica apenas se o método guiado produz menor erro agregado, sem examinar se os testes estatísticos de fato identificaram o modelo correto para cada série individualmente. Esta seção descreve uma análise secundária que responde a essa pergunta diretamente.
+
+\subsection{Definição do Modelo Ótimo Empírico}
+\label{subsec:oracle}
+
+Para cada série $i$, define-se o \textbf{modelo ótimo empírico} (ou \textit{oracle}) como o modelo da família do protocolo que apresenta o menor OWA na amostra de teste:
+
+\begin{equation}
+  m^*_i = \arg\min_{m \,\in\, \mathcal{M}} \,\text{OWA}(m,\, i)
+  \label{eq:oracle}
+\end{equation}
+
+onde $\mathcal{M} = \{\text{ARIMA}, \text{SARIMA}, \text{LSTM}, \text{ARIMA-GARCH}, \text{ARFIMA}\}$ é a família de modelos candidatos. O oracle não é um método aplicável na prática — ele requer conhecimento do futuro para ser calculado —, mas fornece o limite superior de desempenho alcançável pelo protocolo se o diagnóstico fosse perfeito.
+
+\subsection{Taxa de Acerto e Arrependimento}
+\label{subsec:taxa-acerto}
+
+Seja $m^p_i$ o modelo atribuído pelo protocolo à série $i$. Definem-se duas métricas de acurácia diagnóstica:
+
+\textbf{Taxa de acerto} ($\text{TA}$): fração de séries em que o protocolo identificou exatamente o modelo ótimo empírico:
+
+\begin{equation}
+  \text{TA} = \frac{1}{N} \sum_{i=1}^{N} \mathbf{1}\!\left[m^p_i = m^*_i\right]
+  \label{eq:taxa-acerto}
+\end{equation}
+
+\textbf{Arrependimento médio} ($\bar{r}$): diferença média de OWA entre o modelo indicado pelo protocolo e o oracle, medindo o custo do erro de diagnóstico nas séries em que ele ocorre:
+
+\begin{equation}
+  \bar{r} = \frac{1}{N} \sum_{i=1}^{N} \left[\text{OWA}(m^p_i,\, i) - \text{OWA}(m^*_i,\, i)\right]
+  \label{eq:arrependimento}
+\end{equation}
+
+Note que $\bar{r} \geq 0$ por construção; $\bar{r} = 0$ corresponderia a um protocolo de diagnóstico perfeito.
+
+\subsection{Análise por Perfil}
+\label{subsec:acerto-por-perfil}
+
+As métricas $\text{TA}$ e $\bar{r}$ são calculadas globalmente e desagregadas por perfil diagnóstico, permitindo identificar em quais categorias o protocolo é mais e menos confiável. Uma baixa taxa de acerto em determinado perfil indica que o teste estatístico correspondente não discrimina bem o modelo ótimo para aquele tipo de série, o que fornece direção para refinamentos futuros do protocolo.
+
+% ----------------------------------------------------------
+\section{Análises Complementares}
+\label{sec:analises-complementares}
+
+Além da avaliação global descrita no Pipeline Experimental, três análises complementares são conduzidas para aprofundar a interpretação dos resultados e situar o protocolo no contexto da literatura da Competição M4.
+
+\subsection{Desagregação por Domínio de Origem}
+\label{subsec:analise-dominio}
+
+O dataset M4 mensal rotula cada série com seu domínio de origem: Macro, Micro, Finanças, Indústria, Demografia e Outros \cite{makridakis2020m4}. O desempenho do protocolo é calculado separadamente para cada domínio, permitindo verificar se a vantagem do diagnóstico estatístico concentra-se em tipos específicos de série. A hipótese subjacente é que séries financeiras — reconhecidamente mais voláteis e não-lineares — devem beneficiar-se mais fortemente das Etapas 3 (ARCH/GARCH) e 2 (BDS/LSTM), enquanto séries demográficas, mais regulares e de longa duração, devem favorecer ARIMA e SARIMA. A desagregação por domínio permite verificar empiricamente essa expectativa e identificar possíveis pontos de falha do protocolo em domínios específicos.
+
+\subsection{Estratificação por Comprimento da Série}
+\label{subsec:analise-comprimento}
+
+O comprimento da série de treino varia de 42 a 2.794 observações no subconjunto mensal. Séries curtas impõem restrições à potência dos testes estatísticos — particularmente ao teste BDS (que opera sobre resíduos de um AR ajustado) \cite{broock1996test} e ao estimador GPH (que utiliza regressão sobre o periodograma) \cite{geweke1983estimation} —, o que pode degradar a acurácia diagnóstica do protocolo em séries com menos observações. As séries são estratificadas em três faixas de comprimento — curta ($T < 100$), média ($100 \leq T < 500$) e longa ($T \geq 500$) —, e as métricas TA, $\bar{r}$ e OWA são calculadas em cada faixa. Esse recorte permite avaliar se o ganho do protocolo sobre os baselines é uniforme ou se depende de um volume mínimo de dados históricos.
+
+\subsection{Posicionamento no Ranking M4}
+\label{subsec:ranking-m4}
+
+O OWA global obtido pelo protocolo é comparado com os resultados publicados dos 61 métodos que participaram oficialmente da Competição M4 \cite{makridakis2020m4}. A comparação não reproduz as condições exatas da competição — o protocolo opera sobre o subconjunto mensal, enquanto o ranking oficial cobre todas as frequências —, mas fornece uma referência qualitativa do nível de competitividade alcançado. O método vencedor da M4, ES-RNN de \citeonline{smyl2020hybrid}, e o segundo colocado, FFORMA de \citeonline{montero2020fforma}, servem como âncoras superiores da escala. O Método Theta e o Naive2, ambos disponíveis como benchmarks públicos, servem como âncoras inferiores. Resultados do protocolo posicionados entre o Theta e o FFORMA indicariam que o diagnóstico estatístico agrega valor real sem exigir o custo computacional de métodos híbridos complexos.
 
 % ----------------------------------------------------------
 \section{Ambiente Computacional}
 \label{sec:ambiente}
 
-Os experimentos são realizados em Python 3.11. As bibliotecas utilizadas são: \texttt{statsmodels} para os modelos ARIMA, ARFIMA e os testes ADF, KPSS e ARCH; \texttt{arch} para os modelos GARCH; \texttt{hurst} para estimação do expoente de Hurst e do parâmetro GPH; \texttt{pmdarima} para o Auto-ARIMA do baseline; e \texttt{tensorflow}/\texttt{keras} para o modelo LSTM. Os dados da Competição M4 são carregados via a biblioteca \texttt{M4py}. O código e os resultados são versionados em repositório de controle de versão.
+Os experimentos são realizados em Python 3.11. As bibliotecas utilizadas são: \texttt{statsmodels} para os modelos ARIMA, ARFIMA e os testes ADF, KPSS e ARCH; \texttt{arch} para os modelos GARCH; \texttt{hurst} para estimação do expoente de Hurst e do parâmetro GPH; \texttt{pmdarima} para o Auto-ARIMA do baseline; \texttt{statsforecast} (Nixtla) para o Método Theta do baseline; e \texttt{tensorflow}/\texttt{keras} para o modelo LSTM. Os dados da Competição M4 são carregados via a biblioteca \texttt{M4py}. O código e os resultados são versionados em repositório de controle de versão.
 
 % ============================================================
 %  REFERÊNCIAS

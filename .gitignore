@@ -1,17 +1,31 @@
-# ── Scripts de download (não versionar) ──────────────────────
+
+# ── Scripts de download de referências (utilitários, não fazem parte do experimento) ──
 download_refs.py
+download_bib.py
+download_libgen.py
+download_playwright.py
 fix_downloads.py
 
-# ── Referências bibliográficas (PDFs — usar Git LFS se quiser versionar) ──
+# ── Pastas de referências e dados ──
 refs/
-
-# ── Dataset M4 (arquivos grandes) ────────────────────────────
 data/
+
+# ── PDFs (material de referência — não versionado) ──
+*.pdf
+
+# ── Pastas de download manual de artigos ──
+Autoregressive*/
+Distribution*/
+
+# ── Arquivos BibTeX temporários exportados de portais ──
+Periodicos-CAPES-BibTex*.bib
+
+# ── Arquivos de dados estruturados ──
 *.csv
 *.zip
 *.parquet
 
-# ── Python ───────────────────────────────────────────────────
+# ── Python ──
 __pycache__/
 *.py[cod]
 *.pyo
@@ -30,7 +44,7 @@ develop-eggs/
 lib/
 lib64/
 
-# ── Ambientes virtuais ────────────────────────────────────────
+# ── Ambientes virtuais ──
 .env
 .venv
 env/
@@ -38,19 +52,19 @@ venv/
 ENV/
 .python-version
 
-# ── Jupyter Notebooks ────────────────────────────────────────
+# ── Jupyter ──
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
 *.ipynb_checkpoints
 
-# ── IDEs e editores ───────────────────────────────────────────
+# ── Editores ──
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
 *.code-workspace
 
-# ── Sistema operacional ───────────────────────────────────────
+# ── macOS / Windows ──
 .DS_Store
 .DS_Store?
 ._*
@@ -60,7 +74,7 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# ── Logs e temporários ────────────────────────────────────────
+# ── Temporários ──
 *.log
 *.tmp
 *.temp
@@ -68,7 +82,7 @@ desktop.ini
 *.swp
 *.swo
 
-# ── Modelos treinados e checkpoints ──────────────────────────
+# ── Modelos treinados ──
 *.h5
 *.pkl
 *.joblib
@@ -78,22 +92,19 @@ desktop.ini
 checkpoints/
 saved_models/
 
-# ── Credenciais e variáveis de ambiente ──────────────────────
+# ── Credenciais e segredos ──
 .env*
 !.env.example
 secrets.json
 kaggle.json
 credentials.json
 
-# ── Outputs e resultados intermediários ──────────────────────
-# (manter results/tabela_comparativa.csv — é entrega do Sprint 3)
+# ── Outputs temporários ──
 results/temp/
 outputs/
-
-# ── RAG / ChromaDB ───────────────────────────────────────────
 chroma_db/
 vector_store/
 .chroma/
 
-# ── Ferramentas de desenvolvimento (não versionar) ────────────
+# ── Claude Code ──
 .claude/

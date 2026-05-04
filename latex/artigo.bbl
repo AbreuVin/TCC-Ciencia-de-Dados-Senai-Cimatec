@@ -1,0 +1,127 @@
+\providecommand{\abntreprintinfo}[1]{%
+ \citeonline{#1}}
+\setlength{\labelsep}{0pt}\begin{thebibliography}{}
+\providecommand{\abntrefinfo}[3]{}
+\providecommand{\abntbstabout}[1]{}
+\abntbstabout{v-1.9.7 }
+
+\bibitem[Assimakopoulos e Nikolopoulos 2000]{assimakopoulos2000theta}
+\abntrefinfo{Assimakopoulos e Nikolopoulos}{ASSIMAKOPOULOS; NIKOLOPOULOS}{2000}
+{ASSIMAKOPOULOS, V.; NIKOLOPOULOS, K. The theta model: a decomposition approach
+  to forecasting.
+\emph{International Journal of Forecasting}, v.~16, n.~4, p. 521--530, 2000.}
+
+\bibitem[Bollerslev 1986]{bollerslev1986generalized}
+\abntrefinfo{Bollerslev}{BOLLERSLEV}{1986}
+{BOLLERSLEV, T. Generalized autoregressive conditional heteroskedasticity.
+\emph{Journal of Econometrics}, v.~31, n.~3, p. 307--327, 1986.}
+
+\bibitem[Box e Jenkins 1970]{box1970time}
+\abntrefinfo{Box e Jenkins}{BOX; JENKINS}{1970}
+{BOX, G. E.~P.; JENKINS, G.~M. \emph{Time Series Analysis: Forecasting and
+  Control}. San Francisco: Holden-Day, 1970. Dispon{\'\i}vel em:
+  \url{https://archive.org/details/timeseriesanalys0000boxg}.}
+
+\bibitem[Broock et al. 1996]{broock1996test}
+\abntrefinfo{Broock et al.}{BROOCK et al.}{1996}
+{BROOCK, W.~A. et al. A test for independence based on the correlation
+  dimension.
+\emph{Econometric Reviews}, v.~15, n.~3, p. 197--235, 1996.}
+
+\bibitem[Engle 1982]{engle1982autoregressive}
+\abntrefinfo{Engle}{ENGLE}{1982}
+{ENGLE, R.~F. Autoregressive conditional heteroscedasticity with estimates of
+  the variance of {United Kingdom} inflation.
+\emph{Econometrica}, v.~50, n.~4, p. 987--1007, 1982.}
+
+\bibitem[Gers, Schmidhuber e Cummins 2000]{gers2000learning}
+\abntrefinfo{Gers, Schmidhuber e Cummins}{GERS; SCHMIDHUBER; CUMMINS}{2000}
+{GERS, F.~A.; SCHMIDHUBER, J.; CUMMINS, F. Learning to forget: Continual
+  prediction with {LSTM}.
+\emph{Neural Computation}, v.~12, n.~10, p. 2451--2471, 2000.}
+
+\bibitem[Geweke e Porter-Hudak 1983]{geweke1983estimation}
+\abntrefinfo{Geweke e Porter-Hudak}{GEWEKE; PORTER-HUDAK}{1983}
+{GEWEKE, J.; PORTER-HUDAK, S. The estimation and application of long memory
+  time series models.
+\emph{Journal of Time Series Analysis}, v.~4, n.~4, p. 221--238, 1983.}
+
+\bibitem[Granger e Joyeux 1980]{granger1980introduction}
+\abntrefinfo{Granger e Joyeux}{GRANGER; JOYEUX}{1980}
+{GRANGER, C. W.~J.; JOYEUX, R. An introduction to long-memory time series
+  models and fractional differencing.
+\emph{Journal of Time Series Analysis}, v.~1, n.~1, p. 15--29, 1980.}
+
+\bibitem[Hochreiter e Schmidhuber 1997]{hochreiter1997long}
+\abntrefinfo{Hochreiter e Schmidhuber}{HOCHREITER; SCHMIDHUBER}{1997}
+{HOCHREITER, S.; SCHMIDHUBER, J. Long short-term memory.
+\emph{Neural Computation}, v.~9, n.~8, p. 1735--1780, 1997.}
+
+\bibitem[Hurst 1951]{hurst1951long-storage}
+\abntrefinfo{Hurst}{HURST}{1951}
+{HURST, H.~E. Long-term storage capacity of reservoirs.
+\emph{Transactions of the American Society of Civil Engineers}, v.~116, p.
+  770--799, 1951.}
+
+\bibitem[Hyndman e Athanasopoulos 2018]{hyndman2018forecasting}
+\abntrefinfo{Hyndman e Athanasopoulos}{HYNDMAN; ATHANASOPOULOS}{2018}
+{HYNDMAN, R.~J.; ATHANASOPOULOS, G. \emph{Forecasting: Principles and
+  Practice}. 2. ed. Melbourne: OTexts, 2018. Dispon{\'\i}vel em:
+  \url{https://otexts.com/fpp2}.}
+
+\bibitem[Hyndman e Koehler 2006]{hyndman2006another}
+\abntrefinfo{Hyndman e Koehler}{HYNDMAN; KOEHLER}{2006}
+{HYNDMAN, R.~J.; KOEHLER, A.~B. Another look at measures of forecast accuracy.
+\emph{International Journal of Forecasting}, v.~22, n.~4, p. 679--688, 2006.}
+
+\bibitem[Kwiatkowski et al. 1992]{kwiatkowski1992testing}
+\abntrefinfo{Kwiatkowski et al.}{KWIATKOWSKI et al.}{1992}
+{KWIATKOWSKI, D. et al. Testing the null hypothesis of stationarity against the
+  alternative of a unit root.
+\emph{Journal of Econometrics}, v.~54, n.~1--3, p. 159--178, 1992.}
+
+\bibitem[Makridakis 1993]{makridakis1993accuracy}
+\abntrefinfo{Makridakis}{MAKRIDAKIS}{1993}
+{MAKRIDAKIS, S. Accuracy measures: theoretical and practical concerns.
+\emph{International Journal of Forecasting}, v.~9, n.~4, p. 527--529, 1993.}
+
+\bibitem[Makridakis, Spiliotis e Assimakopoulos 2018]{makridakis2018m4results}
+\abntrefinfo{Makridakis, Spiliotis e Assimakopoulos}{MAKRIDAKIS; SPILIOTIS;
+  ASSIMAKOPOULOS}{2018a}
+{MAKRIDAKIS, S.; SPILIOTIS, E.; ASSIMAKOPOULOS, V. The {M4} competition:
+  Results, findings, conclusion and way forward.
+\emph{International Journal of Forecasting}, v.~34, n.~4, p. 802--808, 2018.}
+
+\bibitem[Makridakis, Spiliotis e Assimakopoulos
+  2018]{makridakis2018statistical}
+\abntrefinfo{Makridakis, Spiliotis e Assimakopoulos}{MAKRIDAKIS; SPILIOTIS;
+  ASSIMAKOPOULOS}{2018b}
+{MAKRIDAKIS, S.; SPILIOTIS, E.; ASSIMAKOPOULOS, V. Statistical and machine
+  learning forecasting methods: Concerns and ways forward.
+\emph{{PLOS ONE}}, v.~13, n.~3, p. e0194889, 2018.}
+
+\bibitem[Makridakis, Spiliotis e Assimakopoulos 2020]{makridakis2020m4}
+\abntrefinfo{Makridakis, Spiliotis e Assimakopoulos}{MAKRIDAKIS; SPILIOTIS;
+  ASSIMAKOPOULOS}{2020}
+{MAKRIDAKIS, S.; SPILIOTIS, E.; ASSIMAKOPOULOS, V. The {M4} competition:
+  100,000 time series and 61 forecasting methods.
+\emph{International Journal of Forecasting}, v.~36, n.~1, p. 54--74, 2020.}
+
+\bibitem[Montero-Manso et al. 2020]{montero2020fforma}
+\abntrefinfo{Montero-Manso et al.}{MONTERO-MANSO et al.}{2020}
+{MONTERO-MANSO, P. et al. {FFORMA}: Feature-based forecast model averaging.
+\emph{International Journal of Forecasting}, v.~36, n.~1, p. 86--92, 2020.}
+
+\bibitem[Said e Dickey 1984]{said1984testing}
+\abntrefinfo{Said e Dickey}{SAID; DICKEY}{1984}
+{SAID, S.~E.; DICKEY, D.~A. Testing for unit roots in autoregressive-moving
+  average models of unknown order.
+\emph{Biometrika}, v.~71, n.~3, p. 599--607, 1984.}
+
+\bibitem[Smyl 2020]{smyl2020hybrid}
+\abntrefinfo{Smyl}{SMYL}{2020}
+{SMYL, S. A hybrid method of exponential smoothing and recurrent neural
+  networks for time series forecasting.
+\emph{International Journal of Forecasting}, v.~36, n.~1, p. 75--85, 2020.}
+
+\end{thebibliography}
