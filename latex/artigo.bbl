@@ -118,10 +118,4 @@
   average models of unknown order.
 \emph{Biometrika}, v.~71, n.~3, p. 599--607, 1984.}
 
-\bibitem[Smyl 2020]{smyl2020hybrid}
-\abntrefinfo{Smyl}{SMYL}{2020}
-{SMYL, S. A hybrid method of exponential smoothing and recurrent neural
-  networks for time series forecasting.
-\emph{International Journal of Forecasting}, v.~36, n.~1, p. 75--85, 2020.}
-
 \end{thebibliography}

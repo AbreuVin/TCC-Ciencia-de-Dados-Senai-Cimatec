@@ -6,6 +6,12 @@ download_libgen.py
 download_playwright.py
 fix_downloads.py
 
+# ── Gerador do notebook (utilitário interno) ──
+create_notebook.py
+
+# ── Notebook do experimento (temporário — adicionar ao git quando pronto) ──
+experimento_tcc.ipynb
+
 # ── Pastas de referências e dados ──
 refs/
 data/
