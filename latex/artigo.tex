@@ -201,6 +201,94 @@ método R/S (\textit{Rescaled Range}) e confirmada pelo estimador GPH
 (\textit{Geweke-Porter-Hudak}) \cite{geweke1983estimation} quando
 $H > 0{,}7$ e $d \in (0;\, 0{,}5)$.
 
+A Tabela~\ref{tab:parametros} sintetiza os sete parâmetros diagnósticos
+empregados no protocolo, indicando o valor produzido por cada teste, o
+critério de corte adotado e a consequência para a seleção de modelo.
+
+\begin{table*}[ht]
+  \centering
+  \caption{Parâmetros diagnósticos: saída, critério de corte e indicação de modelo.}
+  \label{tab:parametros}
+  \footnotesize
+  \setlength{\tabcolsep}{5pt}
+  \begin{tabular}{p{1.5cm}p{3.9cm}p{2.3cm}p{1.7cm}p{3.5cm}p{2.1cm}}
+    \toprule
+    \textbf{Parâmetro} &
+    \textbf{O que detecta} &
+    \textbf{Valor produzido} &
+    \textbf{Limiar} &
+    \textbf{Interpretação / indicação de modelo} &
+    \textbf{Referência} \\
+    \midrule
+
+    ADF &
+    Raiz unitária: média e variância instáveis ao longo do tempo &
+    Estatística $\tau$; p-valor &
+    $p < 0{,}05$ &
+    Rejeita $H_0$ $\Rightarrow$ série \textbf{estacionária};
+    não rejeita $\Rightarrow$ não estacionária (diferenciar) &
+    \cite{said1984testing} \\[5pt]
+
+    KPSS &
+    Estacionariedade ($H_0$ oposta ao ADF); usados em conjunto para reduzir falsos positivos &
+    Estatística $\eta$; p-valor &
+    $p < 0{,}05$ &
+    Rejeita $H_0$ $\Rightarrow$ série \textbf{não estacionária};
+    consenso com ADF fornece evidência robusta &
+    \cite{kwiatkowski1992testing} \\[5pt]
+
+    BDS &
+    Dependência não-linear nos resíduos do AR$(p)$ ajustado
+    ($m \in \{2,\ldots,5\}$; $\varepsilon \in \{0{,}5;\;1{,}0;\;1{,}5\}\hat{\sigma}$) &
+    Estatística BDS; p-valor por $(m,\varepsilon)$ &
+    $p < 0{,}05$ consistente &
+    Rejeição em múltiplos $(m,\varepsilon)$ $\Rightarrow$
+    estrutura não-linear residual $\Rightarrow$ \textbf{LSTM} &
+    \cite{broock1996test} \\[5pt]
+
+    ARCH-LM &
+    Heterocedasticidade condicional: variância dos erros varia ao longo do tempo &
+    Estatística LM; p-valor ($q = 12$ defasagens) &
+    $p < 0{,}05$ &
+    Rejeita $H_0$ $\Rightarrow$ clusters de volatilidade $\Rightarrow$ \textbf{ARIMA-GARCH} &
+    \cite{engle1982autoregressive} \\[5pt]
+
+    Hurst R/S &
+    Grau de persistência / memória de longo alcance via análise de escala &
+    Expoente $H \in (0;\,1)$ &
+    $H > 0{,}7$ &
+    $H \approx 0{,}5$: série aleatória; $H > 0{,}7$: \textbf{persistência forte};
+    $H < 0{,}3$: anti-persistência $\Rightarrow$ confirmar com GPH &
+    \cite{hurst1951long-storage} \\[5pt]
+
+    GPH &
+    Parâmetro de integração fracionária $d$; confirma e quantifica
+    a memória longa indicada por Hurst &
+    Estimativa de $d$; IC a 95\% &
+    $d \in (0;\,0{,}5)$ sig. &
+    $d \in (0;\,0{,}5)$ significativo $\Rightarrow$
+    integração fracionária $\Rightarrow$ \textbf{ARFIMA} &
+    \cite{geweke1983estimation} \\[5pt]
+
+    $F_S$ (STL) &
+    Proporção da variância explicada pelo componente sazonal
+    na decomposição STL com $s = 12$ (Eq.~\ref{eq:fs}) &
+    $F_S \in [0;\,1]$ &
+    $F_S > 0{,}64$ &
+    $F_S \approx 0$: sazonalidade desprezível;
+    $F_S > 0{,}64$: \textbf{sazonalidade relevante} $\Rightarrow$ SARIMA &
+    \cite{hyndman2018forecasting} \\
+
+    \bottomrule
+  \end{tabular}
+
+  \vspace{3pt}
+  {\small Nota: ADF e KPSS são aplicados em conjunto; consenso entre os dois
+  fornece evidência robusta de estacionariedade. Discordância indica raiz
+  unitária limítrofe ou quebra estrutural e a série é tratada como não estacionária.
+  Fonte: Elaboração própria com base nas referências indicadas.}
+\end{table*}
+
 \subsection{Modelos de Previsão}
 
 O ARIMA$(p,d,q)$ (\textit{Autoregressive Integrated Moving Average}
@@ -296,20 +384,36 @@ como ARIMA (ou SARIMA, se Etapa 0 indicou sazonalidade).
   \caption{Perfis diagnósticos e modelos indicados.}
   \label{tab:perfis}
   \small
-  \begin{tabular}{p{1.4cm}p{3.7cm}p{2.2cm}}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{p{1.1cm}p{2.6cm}p{1.6cm}p{2.3cm}}
     \toprule
-    \textbf{Perfil} & \textbf{Critério} & \textbf{Modelo} \\
+    \textbf{Perfil} & \textbf{Critério diagnóstico} & \textbf{Modelo} & \textbf{Referência} \\
     \midrule
-    Linear estac. & ADF+KPSS; BDS e ARCH não rejeitam; $H \leq 0{,}7$ & ARIMA \\
-    Sazonal       & Idem + $F_S > 0{,}64$ (Etapa~0) & SARIMA \\
-    Não-linear    & BDS rejeita $H_0$ & LSTM \\
-    Heteroc.      & ARCH rejeita $H_0$ & ARIMA-GARCH \\
-    Mem. longa    & $H > 0{,}7$; GPH confirma $d$ & ARFIMA \\
+    Linear estac. &
+    ADF+KPSS concordam; BDS e ARCH não rejeitam; $H \leq 0{,}7$ &
+    ARIMA &
+    \cite{said1984testing,kwiatkowski1992testing} \\[3pt]
+    Sazonal &
+    Idem + $F_S > 0{,}64$ (Etapa~0) &
+    SARIMA &
+    \cite{hyndman2018forecasting} \\[3pt]
+    Não-linear &
+    BDS rejeita $H_0$ (Etapa~2) &
+    LSTM &
+    \cite{broock1996test} \\[3pt]
+    Heteroc. &
+    ARCH rejeita $H_0$ (Etapa~3) &
+    ARIMA-GARCH &
+    \cite{engle1982autoregressive} \\[3pt]
+    Mem. longa &
+    $H > 0{,}7$; GPH confirma $d \in (0;\,0{,}5)$ (Etapa~4) &
+    ARFIMA &
+    \cite{hurst1951long-storage,geweke1983estimation} \\
     \bottomrule
   \end{tabular}
 
   \vspace{2pt}
-  \small Fonte: Elaboração própria.
+  \small Fonte: Elaboração própria com base nas referências indicadas.
 \end{table}
 
 \subsection{Baselines de Comparação}
